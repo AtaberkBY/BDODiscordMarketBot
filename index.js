@@ -67,7 +67,7 @@ async function sendDiscordNotification(formattedPrice, timestamp) {
     }
 }
 
-setInterval(checkPrice, 5_000);
+setInterval(checkPrice, 1_000*60*5);
 
 
 
