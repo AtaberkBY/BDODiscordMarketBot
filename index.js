@@ -55,7 +55,6 @@ async function sendDiscordNotification(formattedPrice, timestamp) {
         )
         .setTimestamp()
         .setFooter({text: 'BDO Market Takip Botu'});
-        console.log(embedMessage);
         try {
             await channel.send(`<@${process.env.DISCORD_USER_ID}>`).then( await channel.send({ embeds: [embedMessage] }));
         }
