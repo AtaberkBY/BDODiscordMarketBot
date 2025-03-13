@@ -5,7 +5,7 @@ const { EmbedBuilder } = require('discord.js');
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
 const REGION = "eu";
-const TARGET_PRICE = 29_000_000_000;
+const TARGET_PRICE = 30_000_000_000;
 const ITEM_NAME = "Deboreka Ring";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
@@ -66,6 +66,14 @@ async function sendDiscordNotification(formattedPrice, timestamp) {
         console.error("❌ Kanal bulunamadı! Lütfen `.env` dosyanızda DISCORD_CHANNEL_ID değerini doğru girdiğinizden emin olun.");
     }
 }
+
+
+client.on('messageCreate', (message) => {
+    if (message.content === '!ping') {
+      message.channel.send('Pong!');
+    }
+  });
+  
 
 setInterval(checkPrice, 1_000*60*5);
 
