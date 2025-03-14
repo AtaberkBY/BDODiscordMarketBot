@@ -9,7 +9,7 @@ const { getEnhancementName } = require('./utils');
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
 const REGION = "eu";
-const TARGET_PRICE = 38_000_000_000;
+const TARGET_PRICE = 30_000_000_000;
 const ITEM_NAME = "Deboreka Ring";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
@@ -91,6 +91,6 @@ client.on("messageCreate", async (message) => {
 testDBConnection();
   
 
-setInterval(checkPrice, 1_000*60*15);
+setInterval(checkPrice, 1_000*60*10);
 
 client.login(process.env.TOKEN);
