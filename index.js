@@ -102,6 +102,10 @@ client.on('messageCreate', (message) => {
 
 setInterval(checkPrice, 1_000*60*15);
 
+console.log(process.env.TOKEN);
+console.log(process.env.DATABASE_URL);
+console.log(process.env.DISCORD_CHANNEL_ID);
+
 
 
 client.login(process.env.TOKEN);
