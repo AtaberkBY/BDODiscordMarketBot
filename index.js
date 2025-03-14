@@ -4,7 +4,8 @@ const axios = require('axios');
 const { EmbedBuilder } = require('discord.js');
 const { testDBConnection } = require('./db');
 const { getEnhancementName } = require('./utils');
-const commands = require('./commands');
+const fs = require('fs');
+const path = require('path');
 
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
@@ -73,6 +74,15 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancementLev
 
 
 
+const commands = [];
+const commandFiles = fs.readdirSync(path.join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+    const command = require(path.join(__dirname, 'commands', file));
+    commands.push(command);
+}
+
+// interactionCreate olayını dinleyin
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
