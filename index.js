@@ -81,7 +81,7 @@ client.on('messageCreate', async (message) => {
             } else {
                 let response = "📜 **Items Tablosundaki Veriler:**\n";
                 result.rows.forEach((row, index) => {
-                    response += `🔹 **${index + 1}.** ${JSON.stringify(row)}\n`;
+                    response += `🔹 **${index + 1}.** ${row.item_name}\n`;
                 });
                 message.channel.send(response);
             }
@@ -92,6 +92,29 @@ client.on('messageCreate', async (message) => {
     }
 });
 
+client.on('messageCreate', async (message) => {
+    if (message.content === '!marketQueue') {
+        try {
+            const response = await axios.get(`${LIST_BASE_URL}/queue?region=${REGION}&lang=en-US`);
+            const queueData = response.data.data;
+            if(queueData.length > 0) {
+                let response = `📜 Market Sırası için listelenen itemler:\n`;
+                queueData.forEach((item, index) => {
+                    response += `🔹 **${index + 1}.** ${item.name} - Fiyat: ${item.basePrice.toLocaleString("tr-TR")} - Bitiş: ${new Date(item.endTime).toLocaleString("tr-TR", {timeZone: "Europe/Istanbul"})}\n`;
+                });
+                message.channel.send(response);
+            }
+            else {
+                message.channel.send(`🔍 Market sırasında ürün yok bulunamadı!`);
+            }
+        } catch (error) {
+            console.error("⚠️ API HATASI:", error.response ? error.response.data : error.message);
+            message.channel.send("⚠️ API'den veri alınırken hata oluştu.");
+        }
+
+    }
+  }); 
+
 
 client.on('messageCreate', (message) => {
     if (message.content === '!ping') {
@@ -101,11 +124,5 @@ client.on('messageCreate', (message) => {
   
 
 setInterval(checkPrice, 1_000*60*15);
-
-console.log(process.env.TOKEN);
-console.log(process.env.DATABASE_URL);
-console.log(process.env.DISCORD_CHANNEL_ID);
-
-
 
 client.login(process.env.TOKEN);
