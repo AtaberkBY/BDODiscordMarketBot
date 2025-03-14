@@ -1,14 +1,31 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
+const { pingCommand, dbTestCommand, marketQueueCommand } = require('./commands');
 const axios = require('axios');
 const { EmbedBuilder } = require('discord.js');
-const pool = require('./db');
+const { testDBConnection } = require('./db');
 
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
 const REGION = "eu";
 const TARGET_PRICE = 38_000_000_000;
 const ITEM_NAME = "Deboreka Ring";
+
+
+function getEnhancementName(level, categoryId) {
+    const gearNames = { 16: "PRI:", 17: "DUO:", 18: "TRI:", 19: "TET:", 20: "PEN:" };
+    const accessoryNames = { 1: "PRI:", 2: "DUO:", 3: "TRI:", 4: "TET:", 5: "PEN:", 6: "HEX:", 7: "SEP:", 8: "OCT:", 9: "NOV:", 10: "DEC:" };
+
+    // Gear kategorileri (Silah ve Zırh ve Lifeskill eşyaları)
+    const gearCategories = [1, 5, 10, 15, 40];
+
+    if (gearCategories.includes(categoryId)) {
+        return level <= 15 ? `+${level}` : gearNames[level] || `+${level}`;
+    } else if (categoryId === 20) { // Accessory kategorisi
+        return accessoryNames[level] || `+${level}`;
+    }
+    return `+${level}`; // Tanımsız bir kategori gelirse
+}
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
@@ -44,23 +61,6 @@ async function checkPrice() {
     }
 }
 
-function getEnhancementName(level, categoryId) {
-    const gearNames = { 16: "PRI:", 17: "DUO:", 18: "TRI:", 19: "TET:", 20: "PEN:" };
-    const accessoryNames = { 1: "PRI:", 2: "DUO:", 3: "TRI:", 4: "TET:", 5: "PEN:", 6: "HEX:", 7: "SEP:", 8: "OCT:", 9: "NOV:", 10: "DEC:" };
-
-    // Gear kategorileri (Silah ve Zırh)
-    const gearCategories = [1, 5, 10, 15, 40];
-
-    if (gearCategories.includes(categoryId)) {
-        return level <= 15 ? `+${level}` : gearNames[level] || `+${level}`;
-    } else if (categoryId === 20) { // Accessory kategorisi
-        return accessoryNames[level] || `+${level}`;
-    }
-    return `+${level}`; // Tanımsız bir kategori gelirse
-}
-
-// Kullanım Örnekleri
-
 async function sendDiscordNotification(formattedPrice, timestamp, enhancementLevel, itemCategoryId) {
     const channel = client.channels.cache.get(process.env.DISCORD_CHANNEL_ID);
     if(channel) {
@@ -88,57 +88,22 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancementLev
 
 
 
-client.on('messageCreate', async (message) => {
-    if (message.author.bot) return; // Botların mesajlarını yok say
+client.on("messageCreate", async (message) => {
+    if (message.author.bot) return;
 
-    if (message.content === '!dbtest') {
-        try {
-            const result = await pool.query('SELECT * FROM bdo_items'); // Items tablosundaki tüm verileri çek
-            if (result.rows.length === 0) {
-                message.channel.send("📂 Veri tabanında hiç kayıt yok.");
-            } else {
-                let response = "📜 **Items Tablosundaki Veriler:**\n";
-                result.rows.forEach((row, index) => {
-                    response += `🔹 **${index + 1}.** ${row.item_name}\n`;
-                });
-                message.channel.send(response);
-            }
-        } catch (err) {
-            console.error("❌ Veri tabanı hatası:", err);
-            message.channel.send("⚠️ Veri tabanı sorgusu sırasında hata oluştu.");
-        }
+    const command = message.content.toLowerCase();
+
+    if (command === "!ping") {
+        pingCommand(message);
+    } else if (command === "!dbtest") {
+        await dbTestCommand(message);
+    } else if (command === "!marketqueue") {
+        await marketQueueCommand(message, LIST_BASE_URL, REGION, getEnhancementName);
     }
 });
 
-client.on('messageCreate', async (message) => {
-    if (message.content === '!marketQueue') {
-        try {
-            const response = await axios.get(`${LIST_BASE_URL}/queue?region=${REGION}&lang=en-US`);
-            const queueData = response.data.data;
-            if(queueData.length > 0) {
-                let response = `📜 Market Sırası için listelenen itemler:\n`;
-                queueData.forEach((item, index) => {
-                    response += `🔹 **${index + 1}.**${getEnhancementName(item.enhancement,item.mainCategory)} ${item.name} - Fiyat: ${item.basePrice.toLocaleString("tr-TR")} - Bitiş: ${new Date(item.endTime).toLocaleString("tr-TR", {timeZone: "Europe/Istanbul"})}\n`;
-                });
-                message.channel.send(response);
-            }
-            else {
-                message.channel.send(`🔍 Market sırasında ürün yok bulunamadı!`);
-            }
-        } catch (error) {
-            console.error("⚠️ API HATASI:", error.response ? error.response.data : error.message);
-            message.channel.send("⚠️ API'den veri alınırken hata oluştu.");
-        }
 
-    }
-  }); 
-
-
-client.on('messageCreate', (message) => {
-    if (message.content === '!ping') {
-      message.channel.send('Pong!');
-    }
-  });
+testDBConnection();
   
 
 setInterval(checkPrice, 1_000*60*15);

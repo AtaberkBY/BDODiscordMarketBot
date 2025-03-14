@@ -1,14 +1,34 @@
-const { Pool } = require('pg');
-require('dotenv').config();
+const { Pool } = require("pg");
 
-
+// PostgreSQL bağlantısı
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Elastic Beanstalk ortam değişkenini kullan
-  ssl: { rejectUnauthorized: false } // Neon için gerekli
+    connectionString: process.env.DATABASE_URL,
 });
 
-pool.connect()
-  .then(() => console.log("✅ PostgreSQL bağlantısı başarılı!"))
-  .catch(err => console.error("❌ PostgreSQL bağlantı hatası:", err));
+// Basit bir test fonksiyonu (isteğe bağlı)
+async function testDBConnection() {
+    try {
+        const result = await pool.query("SELECT NOW() AS current_time");
+        console.log("✅ Veritabanı bağlantısı başarılı:", result.rows[0].current_time);
+    } catch (error) {
+        console.error("❌ Veritabanı bağlantı hatası:", error);
+    }
+}
 
-module.exports = pool;
+// Veritabanına sorgu çalıştırma fonksiyonu
+async function query(text, params) {
+    try {
+        const result = await pool.query(text, params);
+        return result.rows;
+    } catch (error) {
+        console.error("❌ Veritabanı sorgu hatası:", error);
+        throw error;
+    }
+}
+
+// Dışa aktar
+module.exports = {
+    pool,
+    query,
+    testDBConnection,
+};
