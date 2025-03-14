@@ -2,6 +2,8 @@ require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const axios = require('axios');
 const { EmbedBuilder } = require('discord.js');
+const pool = require('./db');
+
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
 const REGION = "eu";
@@ -25,7 +27,6 @@ async function checkPrice() {
                 const timestamp = new Date(item.endTime).toLocaleString("tr-TR" , {timeZone: "Europe/Istanbul"});
     
                 let formattedPrice = price.toLocaleString("tr-TR");
-                console.log(`💰 ${ITEM_NAME} Fiyatı: ${formattedPrice} - 📅 Yayın Zamanı: ${timestamp}`);
     
                 if (price <= TARGET_PRICE) {
                     sendDiscordNotification(formattedPrice, timestamp);
@@ -68,6 +69,30 @@ async function sendDiscordNotification(formattedPrice, timestamp) {
 }
 
 
+
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return; // Botların mesajlarını yok say
+
+    if (message.content === '!dbtest') {
+        try {
+            const result = await pool.query('SELECT * FROM bdo_items'); // Items tablosundaki tüm verileri çek
+            if (result.rows.length === 0) {
+                message.channel.send("📂 Veri tabanında hiç kayıt yok.");
+            } else {
+                let response = "📜 **Items Tablosundaki Veriler:**\n";
+                result.rows.forEach((row, index) => {
+                    response += `🔹 **${index + 1}.** ${JSON.stringify(row)}\n`;
+                });
+                message.channel.send(response);
+            }
+        } catch (err) {
+            console.error("❌ Veri tabanı hatası:", err);
+            message.channel.send("⚠️ Veri tabanı sorgusu sırasında hata oluştu.");
+        }
+    }
+});
+
+
 client.on('messageCreate', (message) => {
     if (message.content === '!ping') {
       message.channel.send('Pong!');
@@ -75,7 +100,7 @@ client.on('messageCreate', (message) => {
   });
   
 
-setInterval(checkPrice, 1_000*60*5);
+setInterval(checkPrice, 1_000*60*15);
 
 
 
