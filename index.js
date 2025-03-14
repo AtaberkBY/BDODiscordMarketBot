@@ -4,28 +4,13 @@ const { pingCommand, dbTestCommand, marketQueueCommand } = require('./commands')
 const axios = require('axios');
 const { EmbedBuilder } = require('discord.js');
 const { testDBConnection } = require('./db');
+const { getEnhancementName } = require('./utils');
 
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
 const REGION = "eu";
 const TARGET_PRICE = 38_000_000_000;
 const ITEM_NAME = "Deboreka Ring";
-
-
-function getEnhancementName(level, categoryId) {
-    const gearNames = { 16: "PRI:", 17: "DUO:", 18: "TRI:", 19: "TET:", 20: "PEN:" };
-    const accessoryNames = { 1: "PRI:", 2: "DUO:", 3: "TRI:", 4: "TET:", 5: "PEN:", 6: "HEX:", 7: "SEP:", 8: "OCT:", 9: "NOV:", 10: "DEC:" };
-
-    // Gear kategorileri (Silah ve Zırh ve Lifeskill eşyaları)
-    const gearCategories = [1, 5, 10, 15, 40];
-
-    if (gearCategories.includes(categoryId)) {
-        return level <= 15 ? `+${level}` : gearNames[level] || `+${level}`;
-    } else if (categoryId === 20) { // Accessory kategorisi
-        return accessoryNames[level] || `+${level}`;
-    }
-    return `+${level}`; // Tanımsız bir kategori gelirse
-}
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 

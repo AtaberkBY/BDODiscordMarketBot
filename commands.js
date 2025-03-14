@@ -1,5 +1,6 @@
 const axios = require("axios");
 const { query } = require("./db"); // Veritabanı işlemleri için db.js dosyasını içe aktar
+const { getEnhancementName } = require("./utils");
 
 // !ping komutu
 function pingCommand(message) {
@@ -15,7 +16,7 @@ async function dbTestCommand(message) {
         } else {
             let response = "📜 **Items Tablosundaki Veriler:**\n";
             rows.forEach((row, index) => {
-                response += `🔹 **${index + 1}.** ${row.item_name}\n`;
+                response += `🔹 **${index + 1}.** ${getEnhancementName(row.enhancementLevel,row.mainCategory)} ${row.item_name}\n`;
             });
             message.channel.send(response);
         }
