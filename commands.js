@@ -1,55 +1,63 @@
+const { SlashCommandBuilder } = require("discord.js");
 const axios = require("axios");
-const { query } = require("./db"); // Veritabanı işlemleri için db.js dosyasını içe aktar
+const { pool } = require("./db"); // Veritabanı işlemleri için db.js dosyasını içe aktar
 const { getEnhancementName } = require("./utils");
 
 // !ping komutu
-function pingCommand(message) {
-    message.channel.send("🏓 Pong!");
-}
-
-// !dbtest komutu (Veritabanı test)
-async function dbTestCommand(message) {
-    try {
-        const rows = await query("SELECT * FROM bdo_items"); // db.js içindeki query fonksiyonunu kullanıyoruz.
-        if (rows.length === 0) {
-            message.channel.send("📂 Veri tabanında hiç kayıt yok.");
-        } else {
-            let response = "📜 **Items Tablosundaki Veriler:**\n";
-            rows.forEach((row, index) => {
-                response += `🔹 **${index + 1}.** ${getEnhancementName(row.enhancementLevel,row.mainCategory)} ${row.item_name}\n`;
-            });
-            message.channel.send(response);
-        }
-    } catch (err) {
-        console.error("❌ Veri tabanı hatası:", err);
-        message.channel.send("⚠️ Veri tabanı sorgusu sırasında hata oluştu.");
+const commands = [
+    {
+        data: new SlashCommandBuilder()
+            .setName("ping")
+            .setDescription("Botun çalışıp çalışmadığını kontrol eder."),
+        async execute(interaction) {
+            await interaction.reply("🏓 Pong!");
+        },
+    },
+    {
+        data: new SlashCommandBuilder()
+            .setName("trackeditems")
+            .setDescription("Veritabanındaki itemleri gösterir."),
+        async execute(interaction) {
+            try {
+                const result = await pool.query("SELECT * FROM bdo_items");
+                if (result.rows.length === 0) {
+                    await interaction.reply("📂 Veri tabanında hiç kayıt yok.");
+                } else {
+                    let response = "📜 **Items Tablosundaki Veriler:**\n";
+                    result.rows.forEach((row, index) => {
+                        response += `🔹 **${index + 1}.** ${row.item_name}\n`;
+                    });
+                    await interaction.reply(response);
+                }
+            } catch (err) {
+                console.error("❌ Veri tabanı hatası:", err);
+                await interaction.reply("⚠️ Veri tabanı sorgusu sırasında hata oluştu.");
+            }
+        },
+    },
+    {
+        data: new SlashCommandBuilder()
+            .setName("marketqueue")
+            .setDescription("Market sırasındaki itemleri gösterir."),
+        async execute(interaction) {
+            try {
+                const response = await axios.get(`${LIST_BASE_URL}/queue?region=${REGION}&lang=en-US`);
+                const queueData = response.data.data;
+                if (queueData.length > 0) {
+                    let responseText = `📜 Market Sırası için listelenen itemler:\n`;
+                    queueData.forEach((item, index) => {
+                        responseText += `🔹 **${index + 1}.** ${getEnhancementName(item.enhancement, item.mainCategory)} ${item.name} - Fiyat: ${item.basePrice.toLocaleString("tr-TR")} - Bitiş: ${new Date(item.endTime).toLocaleString("tr-TR", {timeZone: "Europe/Istanbul"})}\n`;
+                    });
+                    await interaction.reply(responseText);
+                } else {
+                    await interaction.reply("🔍 Market sırasında ürün bulunamadı!");
+                }
+            } catch (error) {
+                console.error("⚠️ API HATASI:", error.response ? error.response.data : error.message);
+                await interaction.reply("⚠️ API'den veri alınırken hata oluştu.");
+            }
+        },
     }
-}
+];
 
-// !marketQueue komutu (Market verileri)
-async function marketQueueCommand(message, LIST_BASE_URL, REGION, getEnhancementName) {
-    try {
-        const response = await axios.get(`${LIST_BASE_URL}/queue?region=${REGION}&lang=en-US`);
-        const queueData = response.data.data;
-
-        if (queueData.length > 0) {
-            let response = `📜 **Market Sırasındaki Ürünler:**\n`;
-            queueData.forEach((item, index) => {
-                response += `🔹 **${index + 1}.** ${getEnhancementName(item.enhancement, item.mainCategory)} ${item.name} - Fiyat: ${item.basePrice.toLocaleString("tr-TR")} - Bitiş: ${new Date(item.endTime).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" })}\n`;
-            });
-            message.channel.send(response);
-        } else {
-            message.channel.send("🔍 Market sırasında ürün bulunamadı!");
-        }
-    } catch (error) {
-        console.error("⚠️ API HATASI:", error.response ? error.response.data : error.message);
-        message.channel.send("⚠️ API'den veri alınırken hata oluştu.");
-    }
-}
-
-// Komutları dışa aktar
-module.exports = {
-    pingCommand,
-    dbTestCommand,
-    marketQueueCommand,
-};
+module.exports = commands;

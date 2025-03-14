@@ -1,10 +1,10 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
-const { pingCommand, dbTestCommand, marketQueueCommand } = require('./commands');
 const axios = require('axios');
 const { EmbedBuilder } = require('discord.js');
 const { testDBConnection } = require('./db');
 const { getEnhancementName } = require('./utils');
+const commands = require('./commands');
 
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
@@ -73,17 +73,17 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancementLev
 
 
 
-client.on("messageCreate", async (message) => {
-    if (message.author.bot) return;
+client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
 
-    const command = message.content.toLowerCase();
+    const command = commands.find(cmd => cmd.data.name === interaction.commandName);
+    if (!command) return;
 
-    if (command === "!ping") {
-        pingCommand(message);
-    } else if (command === "!dbtest") {
-        await dbTestCommand(message);
-    } else if (command === "!marketqueue") {
-        await marketQueueCommand(message, LIST_BASE_URL, REGION, getEnhancementName);
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(`❌ ${interaction.commandName} komutunda hata oluştu:`, error);
+        await interaction.reply({ content: "⚠️ Komutu çalıştırırken hata oluştu!", ephemeral: true });
     }
 });
 
