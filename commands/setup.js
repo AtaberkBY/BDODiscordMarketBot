@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
+const { query } = require('../db.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,14 +9,14 @@ module.exports = {
     async execute(interaction) {
         const guild = interaction.guild;
         const user = interaction.user;
-        const channelName = `${user.username}-MarketBotChannel`;
+        const channelName = `${user.username}-MBC`;
 
         try {
-            // Kullanıcının zaten bir kanalı olup olmadığını kontrol et
-            const existingChannel = guild.channels.cache.find(channel => channel.name === channelName);
+            const channels = await guild.channels.fetch();
+            const existingChannel = channels.find(channel => channel.name.toLowerCase() === channelName.toLowerCase());
 
             if (existingChannel) {
-                return await interaction.reply({ content: `❗ Zaten bir kanalınız var: ${existingChannel}`, ephemeral: true });
+                return await interaction.reply({ content: `❗ Zaten bir kanalınız var: ${existingChannel}`, Flags: 64, ephemeral: true });
             }
 
             // Kanalı oluştur
@@ -38,10 +39,13 @@ module.exports = {
                 ]
             });
 
-            await interaction.reply({ content: `✅ **Özel market kanalınız oluşturuldu!** ${newChannel}`, ephemeral: true });
+            const insertQuery = `INSERT INTO channels (channel_id, user_id) VALUES ($1, $2)`;
+            await query(insertQuery, [newChannel.id, user.id]);
+
+            await interaction.reply({ content: `✅ **Özel market kanalınız oluşturuldu!** ${newChannel}`, Flags: 64, ephemeral: true });
         } catch (error) {
             console.error('⚠️ Hata oluştu:', error);
-            await interaction.reply({ content: '⚠️ Bir hata oluştu, lütfen tekrar deneyin.', ephemeral: true });
+            await interaction.reply({ content: '⚠️ Bir hata oluştu, lütfen tekrar deneyin.', Flags: 64, ephemeral: true });
         }
     }
 };
