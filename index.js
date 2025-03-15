@@ -1,7 +1,7 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const axios = require('axios');
-const { EmbedBuilder } = require('discord.js');
+const { Routes } = require('discord-api-types/v10')
 const { testDBConnection } = require('./db');
 const { getEnhancementName } = require('./utils');
 const fs = require('fs');
@@ -59,7 +59,7 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancementLev
             {name:'📅 **Market Yayın Zamanı**', value:`**${timestamp}**`, inline: true }
         )
         .setTimestamp()
-        .setFooter({text: 'BDO Market Takip Botu'});
+        .setFooter({text: `BDO Market Takip Botu - ${new Date().toLocaleString("tr-TR", {timeZone: "Europe/Istanbul"})}`});
         try {
             await channel.send(`<@${process.env.DISCORD_USER_ID}>`).then( await channel.send({ embeds: [embedMessage] }));
         }
@@ -100,6 +100,6 @@ client.on("interactionCreate", async (interaction) => {
 testDBConnection();
   
 
-setInterval(checkPrice, 1_000*60*10);
+setInterval(checkPrice, 1_000*60*15);
 
 client.login(process.env.TOKEN);

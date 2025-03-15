@@ -5,7 +5,6 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
 });
 
-// Basit bir test fonksiyonu (isteğe bağlı)
 async function testDBConnection() {
     try {
         const result = await pool.query("SELECT NOW() AS current_time");
