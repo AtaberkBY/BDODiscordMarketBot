@@ -1,4 +1,9 @@
-// Enhancement seviyesini oyun terminolojisine çeviren fonksiyon
+
+const { REST, Routes } = require('discord.js');
+
+const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+
+
 function getEnhancementName(enhancementLevel, categoryId) {
     const gearNames = { 16: "PRI:", 17: "DUO:", 18: "TRI:", 19: "TET:", 20: "PEN:" };
     const accessoryNames = { 1: "PRI:", 2: "DUO:", 3: "TRI:", 4: "TET:", 5: "PEN:", 6: "HEX:", 7: "SEP:", 8: "OCT:", 9: "NOV:", 10: "DEC:" };
@@ -15,4 +20,4 @@ function getEnhancementName(enhancementLevel, categoryId) {
 }
 
 // Başka dosyalarda kullanabilmek için fonksiyonu dışa aktar
-module.exports = { getEnhancementName };
+module.exports = { getEnhancementName,fetchUser };

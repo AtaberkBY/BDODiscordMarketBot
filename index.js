@@ -1,9 +1,8 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes } = require('discord.js');
 const axios = require('axios');
-const { Routes } = require('discord-api-types/v10')
 const { testDBConnection } = require('./db');
-const { getEnhancementName } = require('./utils');
+const { getEnhancementName,fetchUser } = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -98,8 +97,6 @@ client.on("interactionCreate", async (interaction) => {
 
 
 testDBConnection();
-  
 
 setInterval(checkPrice, 1_000*60*15);
-
 client.login(process.env.TOKEN);

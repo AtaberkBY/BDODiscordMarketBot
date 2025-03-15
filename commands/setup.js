@@ -12,8 +12,25 @@ module.exports = {
         const channelName = `${user.username}-MBC`;
 
         try {
-            const channels = await guild.channels.fetch();
-            const existingChannel = channels.find(channel => channel.name.toLowerCase() === channelName.toLowerCase());
+
+            const allChannels = await guild.channels.fetch();
+            const categories = allChannels.filter(channel => channel.type === 'GUILD_CATEGORY');
+
+            let category = categories.find(category => category.name === 'Market Bot Channels');
+
+            if (!category) {
+                category = await guild.channels.create('Market Bot Channels', {
+                    type: 'GUILD_CATEGORY',
+                  });
+            }
+
+
+
+
+
+
+            const categoryChannels = await category.channels.fetch();
+            const existingChannel = categoryChannels.find(channel => channel.name.toLowerCase() === channelName.toLowerCase());
 
             if (existingChannel) {
                 return await interaction.reply({ content: `❗ Zaten bir kanalınız var: ${existingChannel}`, Flags: 64, ephemeral: true });
@@ -22,7 +39,8 @@ module.exports = {
             // Kanalı oluştur
             const newChannel = await guild.channels.create({
                 name: channelName,
-                type: 0, // Metin kanalı
+                type: "GUILD_TEXT", // Metin kanalı
+                parent: category.id, // Kategoriye ekle
                 permissionOverwrites: [
                     {
                         id: guild.roles.everyone.id, // Herkese kapalı yap

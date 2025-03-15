@@ -25,7 +25,7 @@ module.exports = {
                 .setColor('#0099ff')
                 .setTitle('📜 Market Sırasındaki Ürünler')
                 .setDescription('Aşağıda market sırasındaki itemlerin listesi bulunmaktadır:')
-                .setFooter({ text: 'BDO Market Tracker'});
+                .setFooter({ text: `BDO Market Tracker - ${new Date().toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" })}` });
 
             if (queueData.length > 0) {
                 queueData.forEach((item, index) => {
