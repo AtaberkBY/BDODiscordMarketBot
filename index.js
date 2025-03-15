@@ -82,7 +82,6 @@ for (const file of commandFiles) {
     commands.push(command);
 }
 
-// interactionCreate olayını dinleyin
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
