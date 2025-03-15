@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
+const { SlashCommandBuilder, PermissionsBitField, ChannelType } = require('discord.js');
 const { query } = require('../db.js');
 
 module.exports = {
@@ -14,23 +14,21 @@ module.exports = {
         try {
 
             const allChannels = await guild.channels.fetch();
-            const categories = allChannels.filter(channel => channel.type === 'GUILD_CATEGORY');
-
+            const categories = allChannels.filter(channel => channel.type === ChannelType.GuildCategory);
+            console.log(categories);
             let category = categories.find(category => category.name === 'Market Bot Channels');
-
+            console.log(category);
             if (!category) {
-                category = await guild.channels.create('Market Bot Channels', {
-                    type: 'GUILD_CATEGORY',
+                category = await guild.channels.create({
+                    name: 'Market Bot Channels',
+                    type: ChannelType.GuildCategory,
                   });
             }
 
 
-
-
-
-
-            const categoryChannels = await category.channels.fetch();
-            const existingChannel = categoryChannels.find(channel => channel.name.toLowerCase() === channelName.toLowerCase());
+            const existingChannel = allChannels.find(channel => 
+                channel.parentId === category.id && channel.name.toLowerCase() === channelName.toLowerCase()
+            );
 
             if (existingChannel) {
                 return await interaction.reply({ content: `❗ Zaten bir kanalınız var: ${existingChannel}`, Flags: 64, ephemeral: true });
@@ -39,7 +37,7 @@ module.exports = {
             // Kanalı oluştur
             const newChannel = await guild.channels.create({
                 name: channelName,
-                type: "GUILD_TEXT", // Metin kanalı
+                type: ChannelType.GuildText, // Metin kanalı
                 parent: category.id, // Kategoriye ekle
                 permissionOverwrites: [
                     {

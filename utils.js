@@ -20,4 +20,4 @@ function getEnhancementName(enhancementLevel, categoryId) {
 }
 
 // Başka dosyalarda kullanabilmek için fonksiyonu dışa aktar
-module.exports = { getEnhancementName,fetchUser };
+module.exports = { getEnhancementName };

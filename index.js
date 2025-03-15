@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes } = require('discord.js');
 const axios = require('axios');
 const { testDBConnection } = require('./db');
-const { getEnhancementName,fetchUser } = require('./utils');
+const { getEnhancementName} = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
