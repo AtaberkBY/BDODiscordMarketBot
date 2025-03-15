@@ -18,6 +18,9 @@ for (const file of commandFiles) {
     }
 }
 
+
+
+
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
 async function updateCommands() {
@@ -29,8 +32,13 @@ async function updateCommands() {
             Routes.applicationCommands(process.env.CLIENT_ID)
         );
 
-        // Eğer yeni komutlar, eski komutlarla birebir aynıysa güncelleme yapma
-        if (JSON.stringify(existingCommands) === JSON.stringify(commands)) {
+        const existingCommandNames = existingCommands.map(cmd => cmd.name);
+        const newCommandNames = commands.map(cmd => cmd.name);
+        
+        if (
+            existingCommandNames.length === newCommandNames.length &&
+            existingCommandNames.every(name => newCommandNames.includes(name))
+        ) {
             console.log('✅ Komutlar zaten güncel, yükleme yapılmadı.');
             return;
         }
