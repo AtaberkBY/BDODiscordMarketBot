@@ -109,6 +109,4 @@ client.on("interactionCreate", async (interaction) => {
 testDBConnection();
 
 setInterval(checkPrice, 1_000*60*15);
-
-setInterval(checkPrice, 1_000*30);
 client.login(process.env.TOKEN);
