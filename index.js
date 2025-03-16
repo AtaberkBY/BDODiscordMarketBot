@@ -9,8 +9,8 @@ const path = require('path');
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
 const REGION = "eu";
-const TARGET_PRICE = 39_000_000_000;
-const ITEM_NAME = "Deboreka";
+const TARGET_PRICE = 30_000_000_000;
+const ITEM_NAME = "Deboreka Ring";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
