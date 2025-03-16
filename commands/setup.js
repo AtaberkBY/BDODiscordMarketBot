@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionsBitField, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, PermissionsBitField, ChannelType, MessageFlags } = require('discord.js');
 const { query } = require('../db.js');
 
 module.exports = {
@@ -15,9 +15,7 @@ module.exports = {
 
             const allChannels = await guild.channels.fetch();
             const categories = allChannels.filter(channel => channel.type === ChannelType.GuildCategory);
-            console.log(categories);
             let category = categories.find(category => category.name === 'Market Bot Channels');
-            console.log(category);
             if (!category) {
                 category = await guild.channels.create({
                     name: 'Market Bot Channels',
@@ -31,7 +29,7 @@ module.exports = {
             );
 
             if (existingChannel) {
-                return await interaction.reply({ content: `❗ Zaten bir kanalınız var: ${existingChannel}`, Flags: 64, ephemeral: true });
+                return await interaction.reply({ content: `❗ Zaten bir kanalınız var: ${existingChannel}`, flags: MessageFlags.Ephemeral });
             }
 
             // Kanalı oluştur
@@ -55,13 +53,13 @@ module.exports = {
                 ]
             });
 
-            const insertQuery = `INSERT INTO channels (channel_id, user_id) VALUES ($1, $2)`;
-            await query(insertQuery, [newChannel.id, user.id]);
+            const insertChannelQuery = `INSERT INTO channels (channel_id, user_id, server_id, channel_name) VALUES ($1, $2, $3, $4)`;
+            await query(insertChannelQuery, [newChannel.id, user.id, guild.id, newChannel.name]);
 
-            await interaction.reply({ content: `✅ **Özel market kanalınız oluşturuldu!** ${newChannel}`, Flags: 64, ephemeral: true });
+            await interaction.reply({ content: `✅ **Özel market kanalınız oluşturuldu!** ${newChannel}`, flags: MessageFlags.Ephemeral });
         } catch (error) {
             console.error('⚠️ Hata oluştu:', error);
-            await interaction.reply({ content: '⚠️ Bir hata oluştu, lütfen tekrar deneyin.', Flags: 64, ephemeral: true });
+            await interaction.reply({ content: '⚠️ Bir hata oluştu, lütfen tekrar deneyin.', flags: MessageFlags.Ephemeral });
         }
     }
 };

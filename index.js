@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes } = require('discord.js');
 const axios = require('axios');
 const { testDBConnection } = require('./db');
-const { getEnhancementName} = require('./utils');
+const { getEnhancementName, getUserId} = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -32,8 +32,10 @@ async function checkPrice() {
                 const enhancementLevel = item.enhancement;
                 const itemCategoryId = item.mainCategory;
                 if (price <= TARGET_PRICE) {
-                    sendDiscordNotification(formattedPrice, timestamp, enhancementLevel, itemCategoryId);
-                    }
+                    setTimeout(() => {
+                        sendDiscordNotification(formattedPrice, timestamp, enhancementLevel, itemCategoryId);
+                    }, 5_000);
+                }
                 
             });
         }
@@ -47,7 +49,13 @@ async function checkPrice() {
 }
 
 async function sendDiscordNotification(formattedPrice, timestamp, enhancementLevel, itemCategoryId) {
-    const channel = client.channels.cache.get(process.env.DISCORD_CHANNEL_ID);
+    const userData = await getUserId(client);
+    if (!userData) {
+        console.error("❌ Kullanıcı verisi bulunamadı!");
+        return;
+    }
+    const { user_id, channel_id } = JSON.parse(userData);
+    const channel = client.channels.cache.get(channel_id);
     if(channel) {
         const embedMessage = new EmbedBuilder()
         .setColor('#FF0000')
@@ -60,7 +68,9 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancementLev
         .setTimestamp()
         .setFooter({text: `BDO Market Takip Botu - ${new Date().toLocaleString("tr-TR", {timeZone: "Europe/Istanbul"})}`});
         try {
-            await channel.send(`<@${process.env.DISCORD_USER_ID}>`).then( await channel.send({ embeds: [embedMessage] }));
+
+            const userId = user_id;
+            await channel.send(`<@${userId}>`).then( await channel.send({ embeds: [embedMessage] }));
         }
         catch (error) {
             console.error("❌ Discord mesajı gönderilemedi!", error.message);
@@ -99,4 +109,6 @@ client.on("interactionCreate", async (interaction) => {
 testDBConnection();
 
 setInterval(checkPrice, 1_000*60*15);
+
+setInterval(checkPrice, 1_000*30);
 client.login(process.env.TOKEN);
