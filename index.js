@@ -9,8 +9,8 @@ const path = require('path');
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
 const REGION = "eu";
-const TARGET_PRICE = 30_000_000_000;
-const ITEM_NAME = "Deboreka Ring";
+const TARGET_PRICE = 39_000_000_000;
+const ITEM_NAME = "Deboreka";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
@@ -54,31 +54,35 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancementLev
         console.error("❌ Kullanıcı verisi bulunamadı!");
         return;
     }
-    const { user_id, channel_id } = JSON.parse(userData);
-    const channel = client.channels.cache.get(channel_id);
-    if(channel) {
-        const embedMessage = new EmbedBuilder()
-        .setColor('#FF0000')
-        .setTitle('🚨 BDO Market 🚨')
-        .setDescription(`**${getEnhancementName(enhancementLevel,itemCategoryId)}${ITEM_NAME}** düşük fiyata listelendi!`)
-        .addFields(
-            {name:'💰 **Fiyat**', value:`**${formattedPrice}**`, inline: true },
-            {name:'📅 **Market Yayın Zamanı**', value:`**${timestamp}**`, inline: true }
-        )
-        .setTimestamp()
-        .setFooter({text: `BDO Market Takip Botu - ${new Date().toLocaleString("tr-TR", {timeZone: "Europe/Istanbul"})}`});
-        try {
-
-            const userId = user_id;
-            await channel.send(`<@${userId}>`).then( await channel.send({ embeds: [embedMessage] }));
-        }
-        catch (error) {
-            console.error("❌ Discord mesajı gönderilemedi!", error.message);
-        }
-}
-    else {
-        console.error("❌ Kanal bulunamadı! Lütfen `.env` dosyanızda DISCORD_CHANNEL_ID değerini doğru girdiğinizden emin olun.");
+    const users = JSON.parse(userData); 
+    if (!Array.isArray(users) || users.length === 0) {
+        console.error("❌ Kullanıcı verisi bulunamadı!");
+        return;
     }
+
+    // Her kullanıcı için bildirim gönder
+    users.forEach(async ({ user_id, channel_id }) => {
+        const channel = client.channels.cache.get(channel_id);
+        if (channel) {
+            const embedMessage = new EmbedBuilder()
+            .setColor('#FF0000')
+            .setTitle('🚨 BDO Market 🚨')
+            .setDescription(`**${getEnhancementName(enhancementLevel, itemCategoryId)}${ITEM_NAME}** düşük fiyata listelendi!`)
+            .addFields(
+                {name:'💰 **Fiyat**', value:`**${formattedPrice}**`, inline: true },
+                {name:'📅 **Market Yayın Zamanı**', value:`**${timestamp}**`, inline: true }
+            )
+            .setTimestamp()
+            .setFooter({text: `BDO Market Takip Botu - ${new Date().toLocaleString("tr-TR", {timeZone: "Europe/Istanbul"})}`});
+            try {
+                await channel.send(`<@${user_id}>`).then( await channel.send({ embeds: [embedMessage] }));
+            } catch (error) {
+                console.error("❌ Discord mesajı gönderilemedi!", error.message);
+            }
+        } else {
+            console.error("❌ Kanal bulunamadı! Lütfen `.env` dosyanızda DISCORD_CHANNEL_ID değerini doğru girdiğinizden emin olun.");
+        }
+    });
 }
 
 
@@ -109,4 +113,6 @@ client.on("interactionCreate", async (interaction) => {
 testDBConnection();
 
 setInterval(checkPrice, 1_000*60*15);
+
+checkPrice();
 client.login(process.env.TOKEN);

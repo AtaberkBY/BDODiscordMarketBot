@@ -26,22 +26,23 @@ function getEnhancementName(enhancementLevel, categoryId) {
 
 async function getUserId(client) {
     try {
+        const dbChannels = await query("SELECT server_id, channel_name, user_id FROM channels");
+        let results = [];
 
-        for (const guild of client.guilds.cache.values()) {
-            const serverId = guild.id;
+        for (const { server_id, channel_name, user_id } of dbChannels) {
+            console.log(`🔍 Sunucu ID: ${server_id} - Kanal Adı: ${channel_name} - Kullanıcı ID: ${user_id}`);
+            if (userCache.has(server_id)) {
+                const userChannels = userCache.get(server_id);
 
-            if(userCache.has(serverId)) {
-                const { user_id, channel_id } = userCache.get(serverId);
-                console.log(`🔍 Sunucu ID'si önbellekte bulundu: ${serverId}`);
-                return JSON.stringify({user_id:user_id,channel_id:channel_id}) // Hem user_id hem de channel_id döndür
+                const filteredData = userChannels.find(entry => entry.user_id === user_id);
+
+                if (filteredData) {
+                    console.log(`✅ Önbellekten çekildi: ${JSON.stringify(filteredData)}`);
+                    results.push(JSON.stringify(filteredData));
+                    continue;
+                }
             }
-        }
-        
-        // Veritabanındaki tüm kayıtları önceden çekelim
-        const dbChannels = await query("SELECT server_id, channel_name, user_id, channel_id FROM channels");
 
-        // Sunucuları tek tek kontrol et
-        for (const { server_id, channel_name, user_id, channel_id } of dbChannels) {
             let guild = client.guilds.cache.get(server_id) || await client.guilds.fetch(server_id).catch(() => null);
 
             if (!guild) {
@@ -54,7 +55,7 @@ async function getUserId(client) {
 
                 // Kategori kontrolü
                 const category = allChannels.find(channel =>
-                    channel.type === ChannelType.GuildCategory && channel.name === 'Market Bot Channels'
+                    channel.type === ChannelType.GuildCategory && channel.name === "Market Bot Channels"
                 );
 
                 if (!category) {
@@ -63,15 +64,27 @@ async function getUserId(client) {
                 }
 
                 // "-MBC" içeren metin kanallarını filtrele
-                const matchingChannel = allChannels.find(channel => 
+                const matchingChannel = allChannels.find(channel =>
                     channel.parentId === category.id &&
                     channel.name === channel_name // Veritabanındaki isimle tam eşleşme kontrolü
                 );
 
                 if (matchingChannel) {
                     console.log(`✅ Eşleşme bulundu: ${matchingChannel.name} - Kullanıcı ID: ${user_id}`);
-                    userCache.set(server_id, { user_id, channel_id: matchingChannel.id });
-                    return JSON.stringify({user_id:user_id,channel_id: matchingChannel.id}) // Hem user_id hem de channel_id döndür
+
+                    // Eğer bu sunucu önbellekte yoksa, boş bir array ile başlat
+                    if (!userCache.has(server_id)) {
+                        userCache.set(server_id, []);
+                    }
+
+                    // Aynı kullanıcı ve kanal daha önce eklenmemişse ekle
+                    const existingEntries = userCache.get(server_id);
+                    if (!existingEntries.some(entry => entry.user_id === user_id && entry.channel_id === matchingChannel.id)) {
+                        existingEntries.push({ user_id, channel_id: matchingChannel.id });
+                    }
+
+                    results.push({ user_id, channel_id: matchingChannel.id });
+                    continue;
                 } else {
                     console.warn(`⚠️ Veritabanında kayıtlı kanal sunucuda bulunamadı: ${channel_name}`);
                 }
@@ -80,6 +93,7 @@ async function getUserId(client) {
                 console.error(`❌ Sunucu (${guild.name}) için kanallar alınırken hata oluştu:`, channelError);
             }
         }
+        return JSON.stringify(results);
     } catch (error) {
         console.error("❌ Genel hata oluştu:", error);
     }
