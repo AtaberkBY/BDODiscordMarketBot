@@ -6,11 +6,11 @@ const { getEnhancementName, getUserId} = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
-
+const notifiedItems = new Map();
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
 const REGION = "eu";
-const TARGET_PRICE = 30_000_000_000;
-const ITEM_NAME = "Deboreka Ring";
+const TARGET_PRICE = 40_000_000_000;
+const ITEM_NAME = "Deboreka";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
@@ -23,21 +23,35 @@ async function checkPrice() {
         const response = await axios.get(`${LIST_BASE_URL}/queue?region=${REGION}&lang=en-US`);
         const queueData = response.data.data;
         let items = queueData.filter(data => data.name.includes(ITEM_NAME) && data.enhancement == 4);
-        if(items.length > 0) {
-            items.forEach(item => {
+        if (items.length > 0) {
+            for (const item of items) {
                 const price = item.basePrice;
-                const timestamp = new Date(item.endTime).toLocaleString("tr-TR" , {timeZone: "Europe/Istanbul"});
-    
+                const timestamp = new Date(item.endTime).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" });
+
                 let formattedPrice = price.toLocaleString("tr-TR");
                 const enhancementLevel = item.enhancement;
                 const itemCategoryId = item.mainCategory;
-                if (price <= TARGET_PRICE) {
-                    setTimeout(() => {
-                        sendDiscordNotification(formattedPrice, timestamp, enhancementLevel, itemCategoryId);
-                    }, 5_000);
+
+                const userData = await getUserId(client);
+                if (!userData) {
+                    console.error("❌ Kullanıcı verisi bulunamadı!");
+                    continue;
                 }
-                
-            });
+
+                let users = JSON.parse(userData);
+                if (!Array.isArray(users)) {
+                    users = [users]; // Eğer tek bir obje geldiyse array'e çevir
+                }
+
+                for (const { user_id, channel_id } of users) {
+                    const itemKey = `${user_id}-${item.id}-${price}-${enhancementLevel}`;
+
+                    if (price <= TARGET_PRICE && !notifiedItems.has(itemKey)) {
+                        sendDiscordNotification(formattedPrice, timestamp, enhancementLevel, itemCategoryId, user_id, channel_id);
+                        notifiedItems.set(itemKey, Date.now()); // Bildirimi gönderilen eşyayı kaydet
+                    }
+                }
+            }
         }
         else {
             console.log(`🔍 ${ITEM_NAME} bulunamadı!`);
@@ -48,20 +62,8 @@ async function checkPrice() {
     }
 }
 
-async function sendDiscordNotification(formattedPrice, timestamp, enhancementLevel, itemCategoryId) {
-    const userData = await getUserId(client);
-    if (!userData) {
-        console.error("❌ Kullanıcı verisi bulunamadı!");
-        return;
-    }
-    const users = JSON.parse(userData); 
-    if (!Array.isArray(users) || users.length === 0) {
-        console.error("❌ Kullanıcı verisi bulunamadı!");
-        return;
-    }
+async function sendDiscordNotification(formattedPrice, timestamp, enhancementLevel, itemCategoryId, user_id, channel_id) {
 
-    // Her kullanıcı için bildirim gönder
-    users.forEach(async ({ user_id, channel_id }) => {
         const channel = client.channels.cache.get(channel_id);
         if (channel) {
             const embedMessage = new EmbedBuilder()
@@ -82,8 +84,8 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancementLev
         } else {
             console.error("❌ Kanal bulunamadı! Lütfen `.env` dosyanızda DISCORD_CHANNEL_ID değerini doğru girdiğinizden emin olun.");
         }
-    });
-}
+    }
+
 
 
 
@@ -112,7 +114,14 @@ client.on("interactionCreate", async (interaction) => {
 
 testDBConnection();
 
-setInterval(checkPrice, 1_000*60*15);
+setInterval(() => {
+    const now = Date.now();
+    for (let [key, time] of notifiedItems) {
+        if (now - time >= 16 * 60 * 1000) {
+            notifiedItems.delete(key);
+        }
+    }
+}, 60_000); // 1 dakikada bir kontrol et
 
-checkPrice();
+setInterval(checkPrice, 60_000);
 client.login(process.env.TOKEN);

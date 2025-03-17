@@ -30,15 +30,13 @@ async function getUserId(client) {
         let results = [];
 
         for (const { server_id, channel_name, user_id } of dbChannels) {
-            console.log(`🔍 Sunucu ID: ${server_id} - Kanal Adı: ${channel_name} - Kullanıcı ID: ${user_id}`);
             if (userCache.has(server_id)) {
                 const userChannels = userCache.get(server_id);
 
                 const filteredData = userChannels.find(entry => entry.user_id === user_id);
 
                 if (filteredData) {
-                    console.log(`✅ Önbellekten çekildi: ${JSON.stringify(filteredData)}`);
-                    results.push(JSON.stringify(filteredData));
+                    results.push(filteredData);
                     continue;
                 }
             }
