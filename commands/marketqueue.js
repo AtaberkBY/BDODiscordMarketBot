@@ -30,7 +30,7 @@ module.exports = {
             if (queueData.length > 0) {
                 queueData.forEach((item, index) => {
                     embed.addFields({
-                        name: `${index + 1}. ${getEnhancementName(item.enhancement, item.mainCategory)} ${item.name}`,
+                        name: `${index + 1}. ${getEnhancementName(item.enhancement, item.main_category)} ${item.name}`,
                         value: `Fiyat: ${item.basePrice.toLocaleString("tr-TR")}\nBitiş Zamanı: ${new Date(item.endTime).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" })}`,
                         inline: false
                     });

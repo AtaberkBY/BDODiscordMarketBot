@@ -9,7 +9,7 @@ module.exports = {
         .setDescription('Veritabanındaki itemleri gösterir.'),
     async execute(interaction) {
         try {
-            const result = await pool.query("SELECT * FROM bdo_items");
+            const result = await pool.query(`SELECT * FROM tracked_items where user_id = $1`, [interaction.user.id]);
             if (result.rows.length === 0) {
                 await interaction.reply("📂 Veri tabanında hiç kayıt yok.");
             } else {

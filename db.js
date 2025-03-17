@@ -14,7 +14,6 @@ async function testDBConnection() {
     }
 }
 
-// Veritabanına sorgu çalıştırma fonksiyonu
 async function query(text, params) {
     try {
         const result = await pool.query(text, params);
