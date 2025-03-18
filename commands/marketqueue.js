@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { getEnhancementName } = require("../utils");
+const { getEnhancementName } = require("../utils/utils.js");
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');  // EmbedBuilder kullanıyoruz.
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
