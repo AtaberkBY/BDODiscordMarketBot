@@ -1,6 +1,6 @@
 
 const { REST, Routes, ChannelType } = require('discord.js');
-const { query } = require('./db');
+const { query } = require('../db');
 
 const userCache = new Map();
 
@@ -23,6 +23,20 @@ function getEnhancementName(enhancement_level, categoryId) {
     return `+${enhancement_level}`; // Tanımsız bir kategori gelirse
 }
 
+async function getTrackedItems() {
+    try {
+        const trackedItemsQuery = `SELECT item_id, item_name, main_category, enhancement_level, target_price, user_id FROM tracked_items`;
+        return await query(trackedItemsQuery);
+    } catch (error) {
+        console.error("❌ Veritabanından takip edilen eşyalar çekilemedi!", error);
+        return [];
+    }
+}
+
+async function getUserTime(userId) {
+    const result = await query(`SELECT timezone FROM user_timezones WHERE user_id = $1`, [userId]);
+    return result.rowCount > 0 ? result.rows[0].timezone : 'UTC';
+}
 
 async function getUserId(client) {
     try {
@@ -97,4 +111,4 @@ async function getUserId(client) {
     }
 }
 
-module.exports = { getEnhancementName, getUserId };
+module.exports = { getEnhancementName, getUserId, getTrackedItems, getUserTime };

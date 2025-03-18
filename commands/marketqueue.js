@@ -8,51 +8,51 @@ const REGION = "eu";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('marketqueue')
-        .setDescription('Market sırasındaki itemleri gösterir.'),
+        .setDescription('Displays items currently in the market queue.'),
     async execute(interaction) {
         try {
-            // Yanıt verilmediyse, etkileşimi ertele
+            // Defer the reply if no response has been sent yet
             if (!interaction.replied) {
                 await interaction.deferReply();
             }
 
-            // API'den veri çekme
+            // Fetch data from the API
             const response = await axios.get(`${LIST_BASE_URL}/queue?region=${REGION}&lang=en-US`);
             const queueData = response.data.data;
 
-            // Embed mesajı oluşturma
+            // Create an embed message
             const embed = new EmbedBuilder()
                 .setColor('#0099ff')
-                .setTitle('📜 Market Sırasındaki Ürünler')
-                .setDescription('Aşağıda market sırasındaki itemlerin listesi bulunmaktadır:')
-                .setFooter({ text: `BDO Market Tracker - ${new Date().toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" })}` });
+                .setTitle('📜 Market Queue Items')
+                .setDescription('Here is the list of items currently in the market queue:')
+                .setFooter({ text: `BDO Market Tracker - ${new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" })}` });
 
             if (queueData.length > 0) {
                 queueData.forEach((item, index) => {
                     embed.addFields({
                         name: `${index + 1}. ${getEnhancementName(item.enhancement, item.main_category)} ${item.name}`,
-                        value: `Fiyat: ${item.basePrice.toLocaleString("tr-TR")}\nBitiş Zamanı: ${new Date(item.endTime).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" })}`,
+                        value: `Price: ${item.basePrice.toLocaleString("en-US")}\n Market Time: ${new Date(item.endTime).toLocaleString("en-US", { timeZone: "Europe/Istanbul" })}`,
                         inline: false
                     });
                 });
 
-                // Embed mesajını etkileşimde gönder
+                // Send the embed message in the interaction
                 await interaction.editReply({ embeds: [embed] });
             } else {
-                // Eğer market sırası boşsa
-                embed.setDescription('🔍 Market sırasında ürün bulunamadı!');
+                // If the market queue is empty
+                embed.setDescription('🔍 No items found in the market queue!');
                 await interaction.editReply({ embeds: [embed] });
             }
         } catch (error) {
             console.error("⚠️ API HATASI:", error.response ? error.response.data : error.message);
 
-            // Hata durumunda kullanıcıya bir embed mesajı ile yanıt ver
+            // Send an error message to the user via embed
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle('⚠️ API Hatası')
-                .setDescription('API’den veri alınırken bir hata oluştu.');
+                .setTitle('⚠️ API Error')
+                .setDescription('An error occurred while fetching data from the API.');
 
-            // Eğer etkileşimde yanıt verilmediyse, doğrudan reply kullan
+            // If no response has been sent, use reply, otherwise edit the reply
             if (!interaction.replied) {
                 await interaction.reply({ embeds: [errorEmbed] });
             } else {

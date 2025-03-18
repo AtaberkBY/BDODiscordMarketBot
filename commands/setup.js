@@ -1,10 +1,10 @@
-const { SlashCommandBuilder, PermissionsBitField, ChannelType, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, ButtonBuilder, ActionRowBuilder, EmbedBuilder, PermissionsBitField, ChannelType, MessageFlags } = require('discord.js');
 const { query } = require('../db.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('setup')
-        .setDescription('Market botu için özel bir kanal oluşturur.'),
+        .setDescription('Creates a private tracking channel and allows you to set your timezone.'),
 
     async execute(interaction) {
         const guild = interaction.guild;
@@ -29,7 +29,7 @@ module.exports = {
             );
 
             if (existingChannel) {
-                return await interaction.reply({ content: `❗ Zaten bir kanalınız var: ${existingChannel}`, flags: MessageFlags.Ephemeral });
+                return await interaction.reply({ content: `❗ You already have a channel: ${existingChannel}`, flags: MessageFlags.Ephemeral });
             }
 
             // Kanalı oluştur
@@ -56,10 +56,34 @@ module.exports = {
             const insertChannelQuery = `INSERT INTO channels (channel_id, user_id, server_id, channel_name) VALUES ($1, $2, $3, $4)`;
             await query(insertChannelQuery, [newChannel.id, user.id, guild.id, newChannel.name]);
 
-            await interaction.reply({ content: `✅ **Özel market kanalınız oluşturuldu!** ${newChannel}`, flags: MessageFlags.Ephemeral });
+            const embed = new EmbedBuilder()
+                .setColor('#0099ff')
+                .setTitle('🌍 Select Your Timezone')
+                .setDescription('Please select your timezone from the list below.')
+                .setFooter("Please do select your timezone otherwise bot won't work properly.");
+
+            const actionRow = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setCustomId('timezone_UTC')
+                    .setLabel('UTC')
+                    .setStyle('PRIMARY'),
+                new ButtonBuilder()
+                    .setCustomId('timezone_CET')
+                    .setLabel('CET (Berlin)')
+                    .setStyle('PRIMARY'),
+                new ButtonBuilder()
+                    .setCustomId('timezone_TR')
+                    .setLabel('TR (Istanbul)')
+                    .setStyle('PRIMARY')
+
+            );
+
+            await newChannel.send({ embeds: [embed], components: [actionRow] });
+
+            await interaction.reply({ content: `✅ **Your private market channel has been created!** ${newChannel}`, flags: MessageFlags.Ephemeral });
         } catch (error) {
             console.error('⚠️ Hata oluştu:', error);
-            await interaction.reply({ content: '⚠️ Bir hata oluştu, lütfen tekrar deneyin.', flags: MessageFlags.Ephemeral });
+            await interaction.reply({ content: '⚠️ An error occurred, please try again.', flags: MessageFlags.Ephemeral });
         }
     }
 };

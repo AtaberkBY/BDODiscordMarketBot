@@ -1,8 +1,8 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, MessageFlags } = require('discord.js');
 const axios = require('axios');
-const { testDBConnection, query } = require('./db');
-const { getEnhancementName, getUserId} = require('./utils');
+const { testDBConnection } = require('./db');
+const { getEnhancementName, getUserId, getTrackedItems, getUserTime} = require('./utils/utils.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -15,17 +15,6 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBit
 client.once('ready', () => {
     console.log(`✅ ${client.user.tag} başarıyla çalıştı!`);
 });
-
-
-async function getTrackedItems() {
-    try {
-        const trackedItemsQuery = `SELECT item_id, item_name, main_category, enhancement_level, target_price, user_id FROM tracked_items`;
-        return await query(trackedItemsQuery);
-    } catch (error) {
-        console.error("❌ Veritabanından takip edilen eşyalar çekilemedi!", error);
-        return [];
-    }
-}
 
 
 async function checkPrice() {
@@ -59,8 +48,8 @@ async function checkPrice() {
             for(const tracked of matchedItems) {
                 if(item.basePrice > tracked.target_price) continue;;
                 console.log(tracked);  
-                const timestamp = new Date(item.endTime).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" });
-                let formattedPrice = item.basePrice.toLocaleString("tr-TR");
+                const timestamp = new Date(item.endTime).toLocaleString("en-US", { timeZone: getUserTime(tracked.user_id) });
+                let formattedPrice = item.basePrice.toLocaleString("en-US");
                 const itemKey = `${tracked.user_id}-${item.id}-${item.basePrice}-${item.enhancement}`;   
 
                 if (!notifiedItems.has(itemKey)) {
@@ -86,13 +75,13 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancement_le
             const embedMessage = new EmbedBuilder()
             .setColor('#FF0000')
             .setTitle('🚨 BDO Market 🚨')
-            .setDescription(`**${getEnhancementName(enhancement_level, itemCategoryId)}${itemName}** düşük fiyata listelendi!`)
+            .setDescription(`**${getEnhancementName(enhancement_level, itemCategoryId)}${itemName}** has been listed at a low price!`)
             .addFields(
-                {name:'💰 **Fiyat**', value:`**${formattedPrice}**`, inline: true },
-                {name:'📅 **Market Yayın Zamanı**', value:`**${timestamp}**`, inline: true }
+                {name:'💰 **Price**', value:`**${formattedPrice}**`, inline: true },
+                {name:'📅 **Market Listing Time**', value:`**${timestamp}**`, inline: true }
             )
             .setTimestamp()
-            .setFooter({text: `BDO Market Takip Botu - ${new Date().toLocaleString("tr-TR", {timeZone: "Europe/Istanbul"})}`});
+            .setFooter({text: `BDO Market Track Bot - ${new Date().toLocaleString("en-US", {timeZone: getUserTime(user_id)})}`});
             try {
                 await channel.send(`<@${user_id}>`).then( await channel.send({ embeds: [embedMessage] }));
             } catch (error) {
@@ -124,7 +113,7 @@ client.on("interactionCreate", async (interaction) => {
         await command.execute(interaction);
     } catch (error) {
         console.error(`❌ ${interaction.commandName} komutunda hata oluştu:`, error);
-        await interaction.reply({ content: "⚠️ Komutu çalıştırırken hata oluştu!", ephemeral: true });
+        await interaction.reply({ content: "⚠️ An error occurred when running the command!", flags: MessageFlags.Ephemeral });
     }
 });
 

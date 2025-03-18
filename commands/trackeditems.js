@@ -6,14 +6,14 @@ const { SlashCommandBuilder } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('trackeditems')
-        .setDescription('Veritabanındaki itemleri gösterir.'),
+        .setDescription('Shows tracked items in the database.'),
     async execute(interaction) {
         try {
             const result = await pool.query(`SELECT * FROM tracked_items where user_id = $1`, [interaction.user.id]);
             if (result.rows.length === 0) {
-                await interaction.reply("📂 Veri tabanında hiç kayıt yok.");
+                await interaction.reply("📂 There are no tracked items.");
             } else {
-                let response = "📜 **Items Tablosundaki Veriler:**\n";
+                let response = "📜 **Tracked Items:**\n";
                 result.rows.forEach((row, index) => {
                     response += `🔹 **${index + 1}.** ${row.item_name}\n`;
                 });
