@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ButtonBuilder, ActionRowBuilder, EmbedBuilder, PermissionsBitField, ChannelType, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, ButtonBuilder, ActionRowBuilder, EmbedBuilder, PermissionsBitField, ChannelType, MessageFlags, ButtonStyle } = require('discord.js');
 const { query } = require('../db.js');
 
 module.exports = {
@@ -65,15 +65,15 @@ module.exports = {
                 new ButtonBuilder()
                     .setCustomId('timezone_UTC')
                     .setLabel('UTC')
-                    .setStyle('PRIMARY'),
+                    .setStyle(ButtonStyle.Primary),
                 new ButtonBuilder()
                     .setCustomId('timezone_CET')
                     .setLabel('CET (Berlin)')
-                    .setStyle('PRIMARY'),
+                    .setStyle(ButtonStyle.Primary),
                 new ButtonBuilder()
                     .setCustomId('timezone_TR')
                     .setLabel('TR (Istanbul)')
-                    .setStyle('PRIMARY')
+                    .setStyle(ButtonStyle.Primary)
 
             );
 
