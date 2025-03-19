@@ -28,13 +28,14 @@ module.exports = {
                 .setFooter({ text: `BDO Market Tracker - ${new Date().toLocaleString("en-US", { timeZone: await getUserTime(interaction.user.id) })}` });
 
             if (queueData.length > 0) {
-                queueData.forEach((item, index) => {
+                for (const [index, item] of queueData.entries()) {
+                    const userTimeZone = await getUserTime(interaction.user.id);
                     embed.addFields({
                         name: `${index + 1}. ${getEnhancementName(item.enhancement, item.main_category)} ${item.name}`,
-                        value: `Price: ${item.basePrice.toLocaleString("en-US")}\n Market Time: ${new Date(item.endTime).toLocaleString("en-US", { timeZone: "Europe/Istanbul" })}`,
+                        value: `Price: ${item.basePrice.toLocaleString("en-US")}\n Market Time: ${new Date(item.endTime).toLocaleString("en-US", { timeZone: userTimeZone })}`,
                         inline: false
                     });
-                });
+                }
 
                 // Send the embed message in the interaction
                 await interaction.editReply({ embeds: [embed] });

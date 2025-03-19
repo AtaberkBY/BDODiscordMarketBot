@@ -60,7 +60,6 @@ module.exports = {
                 .setColor('#0099ff')
                 .setTitle('🌍 Select Your Timezone')
                 .setDescription('Please select your timezone from the list below.')
-                .setFooter("Please do select your timezone otherwise bot won't work properly.");
 
             const actionRow = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
