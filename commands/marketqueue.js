@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { getEnhancementName } = require("../utils/utils.js");
+const { getEnhancementName, getUserTime } = require("../utils/utils");
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');  // EmbedBuilder kullanıyoruz.
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
@@ -25,7 +25,7 @@ module.exports = {
                 .setColor('#0099ff')
                 .setTitle('📜 Market Queue Items')
                 .setDescription('Here is the list of items currently in the market queue:')
-                .setFooter({ text: `BDO Market Tracker - ${new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" })}` });
+                .setFooter({ text: `BDO Market Tracker - ${new Date().toLocaleString("en-US", { timeZone: await getUserTime(interaction.user.id) })}` });
 
             if (queueData.length > 0) {
                 queueData.forEach((item, index) => {

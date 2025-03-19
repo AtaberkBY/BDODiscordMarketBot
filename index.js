@@ -48,7 +48,7 @@ async function checkPrice() {
             for(const tracked of matchedItems) {
                 if(item.basePrice > tracked.target_price) continue;;
                 console.log(tracked);  
-                const timestamp = new Date(item.endTime).toLocaleString("en-US", { timeZone: getUserTime(tracked.user_id) });
+                const timestamp = new Date(item.endTime).toLocaleString("en-US", { timeZone: await getUserTime(tracked.user_id) });
                 let formattedPrice = item.basePrice.toLocaleString("en-US");
                 const itemKey = `${tracked.user_id}-${item.id}-${item.basePrice}-${item.enhancement}`;   
 
@@ -81,7 +81,7 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancement_le
                 {name:'📅 **Market Listing Time**', value:`**${timestamp}**`, inline: true }
             )
             .setTimestamp()
-            .setFooter({text: `BDO Market Track Bot - ${new Date().toLocaleString("en-US", {timeZone: getUserTime(user_id)})}`});
+            .setFooter({text: `BDO Market Track Bot - ${new Date().toLocaleString("en-US", {timeZone: await getUserTime(user_id)})}`});
             try {
                 await channel.send(`<@${user_id}>`).then( await channel.send({ embeds: [embedMessage] }));
             } catch (error) {

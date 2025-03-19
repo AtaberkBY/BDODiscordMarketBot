@@ -43,37 +43,13 @@ TOKEN=your_discord_bot_token
 DATABASE_URL=your_postgresql_connection_string
 ```
 
-### 5️⃣ Set Up the Database
-
-If your database is not yet set up, execute the following SQL command to create the `tracked_items` table:
-
-```sql
-CREATE TABLE tracked_items (
-    id SERIAL PRIMARY KEY,
-    item_id INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    "mainCategory" INTEGER NOT NULL,
-    enhancementLevel INTEGER NOT NULL,
-    target_price BIGINT NOT NULL,
-    user_id TEXT NOT NULL
-);
-```
-
-### 6️⃣ Run the Bot
+### 5️⃣ Run the Bot
 
 ```sh
 node index.js
 ```
 
 ## 🎮 Usage
-
-### 📌 Add the Bot to Your Server
-
-Use the following OAuth2 URL to add the bot to your Discord server:
-
-```
-https://discord.com/oauth2/authorize?client_id=YOUR_BOT_CLIENT_ID&permissions=bot_permissions&scope=bot
-```
 
 ### 🔎 Commands
 
@@ -88,7 +64,7 @@ https://discord.com/oauth2/authorize?client_id=YOUR_BOT_CLIENT_ID&permissions=bo
 
 - **Discord.js v14** (Interacts with the Discord API)
 - **Node.js** (Server-side JavaScript)
-- **PostgreSQL + NeonDB** (Database management)
+- **PostgreSQL** (Database management)
 - **Axios** (Fetches data from the BDO Market API)
 - **Google Cloud Run** (Keeps the bot running 24/7)
 
