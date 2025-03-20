@@ -1,4 +1,4 @@
-const { query } = require('./db'); // Veritabanı bağlantısı
+const { query } = require('../db'); // Veritabanı bağlantısı
 const { MessageFlags } = require('discord.js');
 
 module.exports = (client) => {
