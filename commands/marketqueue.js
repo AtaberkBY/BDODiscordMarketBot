@@ -31,8 +31,10 @@ module.exports = {
             if (queueData.length > 0) {
                 for (const [index, item] of queueData.entries()) {
                     const userTimeZone = await getUserTime(interaction.user.id);
+                    const enhancementText = getEnhancementName(item.enhancement, item.mainCategory);
+                    const itemText = enhancementText ? `${enhancementText} ${item.name}` : item.name;
                     embed.addFields({
-                        name: `${index + 1}. ${getEnhancementName(item.enhancement, item.main_category)} ${item.name}`,
+                        name: `${index + 1}. ${itemText}`,
                         value: `Price: ${item.basePrice.toLocaleString("en-US")}\n Market Listing Time: ${new Date(item.endTime).toLocaleString("en-US", { timeZone: userTimeZone })}`,
                         inline: false
                     });
@@ -51,7 +53,7 @@ module.exports = {
             // Send an error message to the user via embed
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle(`⚠️${error.response.data.code}`)
+                .setTitle(`⚠️${error.response.data.code ? ` Error Code: ${error.response.data.code}` : ' An Error Occurred'}`)
                 .setDescription(`An error occurred while fetching data from the API. ${error.response.data.messages}`);
 
             // If no response has been sent, use reply, otherwise edit the reply

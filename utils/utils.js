@@ -14,11 +14,13 @@ function getEnhancementName(enhancement_level, categoryId) {
 
     // Gear kategorileri (Silah, Zırh ve Lifeskill eşyaları)
     const gearCategories = [1, 5, 10, 15, 40];
-
+    const noEnhancementNameCategories = [ 70 ];
     if (gearCategories.includes(categoryId)) {
         return enhancement_level <= 15 ? `+${enhancement_level}` : gearNames[enhancement_level] || `+${enhancement_level}`;
     } else if (categoryId === 20) { // Accessory kategorisi
         return accessoryNames[enhancement_level] || `+${enhancement_level}`;
+    } else if (noEnhancementNameCategories.includes(categoryId)) {
+        return ""; // Enhancement isimleri olmayan kategoriler
     }
     return `+${enhancement_level}`; // Tanımsız bir kategori gelirse
 }
