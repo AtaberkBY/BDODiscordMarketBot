@@ -134,4 +134,6 @@ setInterval(() => {
 }, 60_000); // 1 dakikada bir kontrol et
 
 setInterval(checkPrice, 60_000);
+
+checkPrice();
 client.login(process.env.TOKEN);

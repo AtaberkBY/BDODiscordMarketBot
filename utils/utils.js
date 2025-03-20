@@ -35,7 +35,7 @@ async function getTrackedItems() {
 
 async function getUserTime(userId) {
     const result = await query(`SELECT timezone FROM user_timezones WHERE user_id = $1`, [userId]);
-    return result.rowCount > 0 ? result.rows[0].timezone : 'UTC';
+    return result.length > 0 ? result[0].timezone : 'UTC';
 }
 
 async function getUserId(client) {

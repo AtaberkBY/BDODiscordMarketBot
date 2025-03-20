@@ -33,7 +33,7 @@ module.exports = {
                     const userTimeZone = await getUserTime(interaction.user.id);
                     embed.addFields({
                         name: `${index + 1}. ${getEnhancementName(item.enhancement, item.main_category)} ${item.name}`,
-                        value: `Price: ${item.basePrice.toLocaleString("en-US")}\n Market Time: ${new Date(item.endTime).toLocaleString("en-US", { timeZone: userTimeZone })}`,
+                        value: `Price: ${item.basePrice.toLocaleString("en-US")}\n Market Listing Time: ${new Date(item.endTime).toLocaleString("en-US", { timeZone: userTimeZone })}`,
                         inline: false
                     });
                 }
