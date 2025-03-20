@@ -19,7 +19,7 @@ function getEnhancementName(enhancement_level, categoryId) {
         return enhancement_level <= 15 ? `+${enhancement_level}` : gearNames[enhancement_level] || `+${enhancement_level}`;
     } else if (categoryId === 20) { // Accessory kategorisi
         return accessoryNames[enhancement_level] || `+${enhancement_level}`;
-    } else if (noEnhancementNameCategories.includes(categoryId)) {
+    } else if (noEnhancementNameCategories.includes(categoryId) || enhancement_level === 0) {
         return ""; // Enhancement isimleri olmayan kategoriler
     }
     return `+${enhancement_level}`; // Tanımsız bir kategori gelirse
