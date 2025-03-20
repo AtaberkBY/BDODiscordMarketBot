@@ -134,5 +134,4 @@ setInterval(() => {
 
 setInterval(checkPrice, 60_000);
 
-checkPrice();
 client.login(process.env.TOKEN);
