@@ -12,12 +12,13 @@ module.exports = {
     async execute(interaction) {
         try {
             // Defer the reply if no response has been sent yet
-            if (!interaction.replied) {
+            if (!interaction.replied && !interaction.deferred) {
                 await interaction.deferReply();
             }
 
             // Fetch data from the API
             const response = await axios.get(`${LIST_BASE_URL}/queue?region=${REGION}&lang=en-US`);
+
             const queueData = response.data.data;
 
             // Create an embed message
@@ -50,11 +51,11 @@ module.exports = {
             // Send an error message to the user via embed
             const errorEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle('⚠️ API Error')
-                .setDescription('An error occurred while fetching data from the API.');
+                .setTitle(`⚠️${error.response.data.code}`)
+                .setDescription(`An error occurred while fetching data from the API. ${error.response.data.messages}`);
 
             // If no response has been sent, use reply, otherwise edit the reply
-            if (!interaction.replied) {
+            if (!interaction.replied && !interaction.deferred) {
                 await interaction.reply({ embeds: [errorEmbed] });
             } else {
                 await interaction.editReply({ embeds: [errorEmbed] });
