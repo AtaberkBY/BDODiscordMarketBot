@@ -23,6 +23,21 @@ module.exports = {
                   });
             }
 
+            const dbChannels = await query(`SELECT channel_id FROM channels WHERE server_id = $1`, [guild.id]);
+            const dbChannelIds = dbChannels.map(row => row.channel_id);
+
+
+            const existingChannelIds = allChannels
+                .filter(channel => channel.parentId === category.id)
+                .map(channel => channel.id);
+
+            for (const dbChannelId of dbChannelIds) {
+                if (!existingChannelIds.includes(dbChannelId)) {
+                    console.log(`⚠️ Missing channel in Discord: ${dbChannelId}`);
+                    await query(`DELETE FROM channels WHERE channel_id = $1`, [dbChannelId]);
+                    console.log(`🗑️ Deleted missing channel from DB: ${dbChannelId}`);
+                }
+            }
 
             const existingChannel = allChannels.find(channel => 
                 channel.parentId === category.id && channel.name.toLowerCase() === channelName.toLowerCase()
@@ -76,8 +91,8 @@ module.exports = {
                     .setStyle(ButtonStyle.Primary)
 
             );
-
-            await newChannel.send({ embeds: [embed], components: [actionRow] });
+            const sentMessage = await newChannel.send({ embeds: [embed], components: [actionRow] });
+            await sentMessage.pin();
 
             await interaction.reply({ content: `✅ **Your private market channel has been created!** ${newChannel}`, flags: MessageFlags.Ephemeral });
         } catch (error) {
