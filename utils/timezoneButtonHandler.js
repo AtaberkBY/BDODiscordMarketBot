@@ -3,7 +3,7 @@ const { MessageFlags } = require('discord.js');
 
 module.exports = (client) => {
     client.on("interactionCreate", async (interaction) => {
-        if (interaction.isButton()) {
+        if (interaction.isButton() && interaction.customId.startsWith('timezone_')) {
             // Buton tıklamaları burada işlenecek
             console.log(`📌 Butona basıldı: ${interaction.customId}`);
 

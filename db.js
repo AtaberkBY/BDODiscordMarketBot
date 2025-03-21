@@ -26,7 +26,6 @@ async function query(text, params) {
 
 // Dışa aktar
 module.exports = {
-    pool,
     query,
     testDBConnection,
 };

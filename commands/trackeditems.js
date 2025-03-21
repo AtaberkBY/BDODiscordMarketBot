@@ -1,6 +1,6 @@
 // ./commands/trackeditems.js
-const { pool } = require("../db");
 const { SlashCommandBuilder } = require('discord.js');
+const { query } = require('../db.js');
 
 
 module.exports = {
@@ -9,7 +9,7 @@ module.exports = {
         .setDescription('Shows tracked items in the database.'),
     async execute(interaction) {
         try {
-            const result = await pool.query(`SELECT * FROM tracked_items where user_id = $1`, [interaction.user.id]);
+            const result = await query(`SELECT * FROM tracked_items where user_id = $1`, [interaction.user.id]);
             if (result.rows.length === 0) {
                 await interaction.reply("📂 There are no tracked items.");
             } else {

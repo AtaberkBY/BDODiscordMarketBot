@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 
 const timezoneButtonHandler = require('./utils/timezoneButtonHandler.js');
+const menuButtonHandler = require('./utils/menuButtonHandler.js');
 
 const notifiedItems = new Map();
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
@@ -65,7 +66,7 @@ async function checkPrice() {
         }
             
     } catch (error) {
-        console.error("⚠️ API HATASI:", error.response ? error.response.data : error.message);
+        console.error("⚠️ API HATASI - Index:", error.response ? error.response.data : error.message);
     }
 }
 
@@ -121,6 +122,7 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 timezoneButtonHandler(client);
+menuButtonHandler(client);
 testDBConnection();
 
 setInterval(() => {
@@ -135,4 +137,4 @@ setInterval(() => {
 setInterval(checkPrice, 60_000);
 
 //botu instance kapatmadan devre dışı bırakma testi
-//client.login(process.env.TOKEN);
+client.login(process.env.TOKEN);
