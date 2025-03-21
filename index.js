@@ -134,4 +134,5 @@ setInterval(() => {
 
 setInterval(checkPrice, 60_000);
 
-client.login(process.env.TOKEN);
+//botu instance kapatmadan devre dışı bırakma testi
+//client.login(process.env.TOKEN);
