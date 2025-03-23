@@ -24,28 +24,32 @@ module.exports = {
             }
 
             const dbChannels = await query(`SELECT channel_id FROM channels WHERE server_id = $1`, [guild.id]);
-            const dbChannelIds = dbChannels.map(row => row.channel_id);
+
+            if(dbChannels.length > 0) {
+                const dbChannelIds = dbChannels.map(row => row.channel_id);
 
 
-            const existingChannelIds = allChannels
-                .filter(channel => channel.parentId === category.id)
-                .map(channel => channel.id);
-
-            for (const dbChannelId of dbChannelIds) {
-                if (!existingChannelIds.includes(dbChannelId)) {
-                    console.log(`⚠️ Missing channel in Discord: ${dbChannelId}`);
-                    await query(`DELETE FROM channels WHERE channel_id = $1`, [dbChannelId]);
-                    console.log(`🗑️ Deleted missing channel from DB: ${dbChannelId}`);
+                const existingChannelIds = allChannels
+                    .filter(channel => channel.parentId === category.id)
+                    .map(channel => channel.id);
+    
+                for (const dbChannelId of dbChannelIds) {
+                    if (!existingChannelIds.includes(dbChannelId)) {
+                        console.log(`⚠️ Missing channel in Discord: ${dbChannelId}`);
+                        await query(`DELETE FROM channels WHERE channel_id = $1`, [dbChannelId]);
+                        console.log(`🗑️ Deleted missing channel from DB: ${dbChannelId}`);
+                    }
+                }
+    
+                const existingChannel = allChannels.find(channel => 
+                    channel.parentId === category.id && channel.name.toLowerCase() === channelName.toLowerCase()
+                );
+    
+                if (existingChannel) {
+                    return await interaction.reply({ content: `❗ You already have a channel: ${existingChannel}`, flags: MessageFlags.Ephemeral });
                 }
             }
-
-            const existingChannel = allChannels.find(channel => 
-                channel.parentId === category.id && channel.name.toLowerCase() === channelName.toLowerCase()
-            );
-
-            if (existingChannel) {
-                return await interaction.reply({ content: `❗ You already have a channel: ${existingChannel}`, flags: MessageFlags.Ephemeral });
-            }
+            
 
             // Kanalı oluştur
             const newChannel = await guild.channels.create({

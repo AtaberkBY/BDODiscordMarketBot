@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, MessageFlags } = require('discord.js');
 const axios = require('axios');
 const { testDBConnection, query } = require('./db');
-const { getEnhancementName, getUserId, getTrackedItems, getUserTime} = require('./utils/utils.js');
+const { getEnhancementName, getUserId, getTrackedItems, getUserTime, checkAndInsertItem } = require('./utils/utils.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -30,7 +30,6 @@ async function checkPrice() {
 
         const response = await axios.get(`${LIST_BASE_URL}/queue?region=${REGION}&lang=en-US`);
         const queueData = response.data.data;
-
         const userData = await getUserId(client);
         if (!userData) {
             console.error("❌ Kullanıcı verisi bulunamadı!");
@@ -39,25 +38,51 @@ async function checkPrice() {
 
         let users = JSON.parse(userData);
         if (!Array.isArray(users)) {
-            users = [users]; // Eğer tek bir obje geldiyse array'e çevir
+            users = [users]; 
         }
 
+        const userTimezones = new Map();
+        for (const user of users) {
+            userTimezones.set(user.user_id, await getUserTime(user.user_id));
+        }
+
+        const trackedMap = new Map();
+        for (const tracked of trackedItems) {
+            const key = `${tracked.item_id}-${tracked.enhancement_level}`;
+            if (!trackedMap.has(key)) {
+                trackedMap.set(key, []);
+            }
+            trackedMap.get(key).push(tracked);
+        }
+
+
+
         for (const item of queueData) {
-            const matchedItems = trackedItems.filter(tracked =>
-                tracked.item_id === item.id &&
-                tracked.enhancement_level === item.enhancement
-            );
+            await checkAndInsertItem(item.id, item.name, item.mainCategory, item.subCategory);
+            const key = `${item.id}-${item.enhancement}`;
+            const matchedItems = trackedMap.get(key) || [];
 
             for(const tracked of matchedItems) {
-                if(item.basePrice > tracked.target_price) continue;;
-                const timestamp = new Date(item.endTime).toLocaleString("en-US", { timeZone: await getUserTime(tracked.user_id) });
-                let formattedPrice = item.basePrice.toLocaleString("en-US");
-                const itemKey = `${tracked.user_id}-${item.id}-${item.basePrice}-${item.enhancement}`;   
+                if(item.basePrice > tracked.target_price) continue;
+                const userTimezone = userTimezones.get(tracked.user_id);
+                const timestamp = new Date(item.endTime).toLocaleString("en-US", { timeZone: userTimezone });
+                const formattedPrice = item.basePrice.toLocaleString("en-US");
+                const itemKey = `${tracked.user_id}-${item.id}-${item.basePrice}-${item.enhancement}`; 
 
                 if (!notifiedItems.has(itemKey)) {
-                    const user = users.find(user => user.user_id === tracked.user_id);
-                    if (user) {
-                        sendDiscordNotification(formattedPrice, timestamp, item.enhancement, tracked.main_category, tracked.item_name, user.user_id, user.channel_id);
+                    const userChannels = users.filter(user => user.user_id === tracked.user_id);
+                    if (userChannels) {
+                        for (const user of userChannels) {
+                            sendDiscordNotification(
+                                formattedPrice,
+                                timestamp,
+                                item.enhancement,
+                                tracked.main_category,
+                                tracked.item_name,
+                                user.user_id,
+                                user.channel_id
+                            );
+                        }
                         notifiedItems.set(itemKey, Date.now());
                     }
                 }
@@ -77,7 +102,7 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancement_le
             const embedMessage = new EmbedBuilder()
             .setColor('#FF0000')
             .setTitle('🚨 BDO Market 🚨')
-            .setDescription(`**${getEnhancementName(enhancement_level, itemCategoryId)}${itemName}** has been listed at a low price!`)
+            .setDescription(`**${getEnhancementName(enhancement_level, itemCategoryId, itemName)}** has been listed at a low price!`)
             .addFields(
                 {name:'💰 **Price**', value:`**${formattedPrice}**`, inline: true },
                 {name:'📅 **Market Listing Time**', value:`**${timestamp}**`, inline: true }
@@ -136,5 +161,5 @@ setInterval(() => {
 
 setInterval(checkPrice, 60_000);
 
-//botu instance kapatmadan devre dışı bırakma testi
+checkPrice();
 client.login(process.env.TOKEN);
