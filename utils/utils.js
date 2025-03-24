@@ -157,7 +157,7 @@ async function checkAndInsertItem(itemId, itemName, itemCategoryId) {
         "Shuriken": 8,
         "Vambrace": 9,
         "Noble Sword": 10,
-        "Ra'gohn" : 11,
+        "Ra'ghon" : 11,
         "Vitclari" : 12,
         "Haladie" : 13,
         "Quoratum" : 14,
@@ -186,7 +186,17 @@ async function checkAndInsertItem(itemId, itemName, itemCategoryId) {
         "Gardbrace" : 14,
         "Cestus" : 15,
         "Crimson Glaives" : 16,
-        "GreatBow" : 17
+        "Greatbow" : 17,
+        "Jordun" : 19,
+        "Dual Glaives" : 20,
+        "Sting" : 21,
+        "Kibelius" : 22,
+        "Patraca" : 23,
+        "Trion" : 24,
+        "Soul Tome" : 25,
+        "Foxtail Fans" : 26,
+        "Sledgehammer" : 27
+
     },
     15: {
         "Helmet": 1,
@@ -215,6 +225,9 @@ async function checkAndInsertItem(itemId, itemName, itemCategoryId) {
         "Flask": 10,
         "Sailing Log": 10,
         "Processing Stone": 10    
+    },
+    50: {
+        "Crystal" : 1,
     },
     70: {
         "Ship License" : 1,

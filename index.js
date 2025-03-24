@@ -7,7 +7,6 @@ const fs = require('fs');
 const path = require('path');
 
 const timezoneButtonHandler = require('./utils/timezoneButtonHandler.js');
-const menuButtonHandler = require('./utils/menuButtonHandler.js');
 
 const notifiedItems = new Map();
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
@@ -147,7 +146,6 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 timezoneButtonHandler(client);
-menuButtonHandler(client);
 testDBConnection();
 
 setInterval(() => {

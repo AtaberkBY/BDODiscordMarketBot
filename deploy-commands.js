@@ -18,6 +18,21 @@ for (const file of commandFiles) {
     }
 }
 
+function saveCommandsToFile(commands) {
+    const filePath = path.join(__dirname, 'commands.json');
+    fs.writeFileSync(filePath, JSON.stringify(commands, null, 2), 'utf8');
+}
+
+// Komutları dosyadan oku
+function readCommandsFromFile() {
+    const filePath = path.join(__dirname, 'commands.json');
+    if (fs.existsSync(filePath)) {
+        const data = fs.readFileSync(filePath, 'utf8');
+        return JSON.parse(data);
+    }
+    return [];
+}
+
 
 
 
@@ -27,14 +42,16 @@ async function updateCommands() {
     try {
         console.log('🔄 Komutlar güncelleniyor...');
 
-        // Daha önce yüklenen komutları al
-        const existingCommands = await rest.get(
-            Routes.applicationCommands(process.env.CLIENT_ID)
-        );
+        // Daha önce kaydedilen komutları dosyadan al
+        const existingCommands = readCommandsFromFile();
 
-        const existingCommandNames = existingCommands.map(cmd => cmd.name);
+        // Yeni komutları al
         const newCommandNames = commands.map(cmd => cmd.name);
-        
+
+        // Mevcut komutların adlarını al
+        const existingCommandNames = existingCommands.map(cmd => cmd.name);
+
+        // Komutlar değişmiş mi?
         if (
             existingCommandNames.length === newCommandNames.length &&
             existingCommandNames.every(name => newCommandNames.includes(name))
@@ -48,6 +65,9 @@ async function updateCommands() {
             Routes.applicationCommands(process.env.CLIENT_ID),
             { body: commands }
         );
+
+        // Yeni komutları dosyaya kaydet
+        saveCommandsToFile(commands);
 
         console.log('✅ Komutlar başarıyla güncellendi!');
     } catch (error) {
