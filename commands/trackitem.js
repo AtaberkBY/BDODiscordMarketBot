@@ -23,16 +23,16 @@ module.exports = {
                 .setRequired(true)
                 .addChoices(
                     { name: 'Base', value: 0 },
-                    { name: 'PRI', value: 1 },
-                    { name: 'DUO', value: 2 },
-                    { name: 'TRI', value: 3 },
-                    { name: 'TET', value: 4 },
-                    { name: 'PEN', value: 5 },
-                    { name: 'HEX', value: 6 },
-                    { name: 'SEP', value: 7 },
-                    { name: 'OCT', value: 8 },
-                    { name: 'NOV', value: 9 },
-                    { name: 'DEC', value: 10 }       
+                    { name: 'PRI (I)', value: 1 },
+                    { name: 'DUO (II)', value: 2 },
+                    { name: 'TRI (III)', value: 3 },
+                    { name: 'TET (IV)', value: 4 },
+                    { name: 'PEN (V)', value: 5 },
+                    { name: 'HEX (VI)', value: 6 },
+                    { name: 'SEP (VII)', value: 7 },
+                    { name: 'OCT (VIII)', value: 8 },
+                    { name: 'NOV (IX)', value: 9 },
+                    { name: 'DEC (X)', value: 10 }       
                 )),
 
     async execute(interaction) {
@@ -70,7 +70,7 @@ module.exports = {
                 return;
             }
 
-            //await query('INSERT INTO tracked_items (item_id , item_name, main_category , enhancement_level, user_id, target_price) VALUES ($1, $2, $3, $4, $5, $6)', [queryText[0].item_id, itemName, queryText[0].main_category, enhancementLevel, user, price]);
+            await query('INSERT INTO tracked_items (item_id , item_name, main_category , enhancement_level, user_id, target_price) VALUES ($1, $2, $3, $4, $5, $6)', [queryText[0].item_id, itemName, queryText[0].main_category, enhancementLevel, user, price]);
             return interaction.reply("✅ Item added to the database.");
 
         } catch (err) {

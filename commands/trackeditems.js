@@ -15,7 +15,7 @@ module.exports = {
             } else {
                 let response = "📜 **Tracked Items:**\n";
                 result.forEach((row, index) => {
-                    response += `🔹 **${index + 1}.** ${row.item_name}\n`;
+                    response += `🔹 **${index + 1}.** ${row.item_name} -> ${formatNumber(row.target_price)}\n`;
                 });
                 await interaction.reply(response);
             }
@@ -25,3 +25,11 @@ module.exports = {
         }
     },
 };
+
+function formatNumber(num) {
+    if (num >= 1e9) return (num / 1e9).toFixed(1) + "B";
+    if (num >= 1e6) return (num / 1e6).toFixed(1) + "M";
+    if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";
+    return num.toString();
+}
+
