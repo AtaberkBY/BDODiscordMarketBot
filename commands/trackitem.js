@@ -50,16 +50,16 @@ module.exports = {
                 await interaction.reply("⚠️ Enhancement level can't be higher than 5 for non Preonne items.");
                 return;
             }
-            if(!fallenGods.some(item => itemName.includes(item)) && enhancementLevel != 0){
-                enhancementLevel+=15;
-            }
-            
+           
             const userTrackedItemIds = await query('SELECT item_id FROM tracked_items WHERE user_id = $1', [user]);
             const queryText = await query ('SELECT * FROM items WHERE item_name = $1', [itemName]);
             if (queryText.length === 0) {
                 const errorRecommendationText = await query('SELECT * FROM items WHERE item_name ILIKE $1', [`%${itemName}%`]);
                 await interaction.reply(`⚠️ Item not found. Did you mean?\n ${errorRecommendationText.map(item => item.item_name).join('\n')}`); 
                 return;
+            }
+            if(!fallenGods.some(item => itemName.includes(item)) && enhancementLevel != 0 && !queryText.main_category == 20 ){
+                enhancementLevel+=15;
             }
             if(fallenGods.includes(itemName)){
                 itemName = `${fallenGodEnhancementNames[enhancementLevel]} ${itemName}` 

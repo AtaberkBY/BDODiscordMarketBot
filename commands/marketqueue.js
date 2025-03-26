@@ -32,7 +32,6 @@ module.exports = {
                 for (const [index, item] of queueData.entries()) {
                     const userTimeZone = await getUserTime(interaction.user.id);
                     const itemText = getEnhancementName(item.enhancement, item.mainCategory, item.name);
-                  //  const itemText = enhancementText ? `${enhancementText} ${item.name}` : item.name;
                     embed.addFields({
                         name: `${index + 1}. ${itemText}`,
                         value: `Price: ${item.basePrice.toLocaleString("en-US")}\n Market Listing Time: ${new Date(item.endTime).toLocaleString("en-US", { timeZone: userTimeZone })}`,
