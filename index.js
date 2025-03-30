@@ -2,11 +2,10 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, MessageFlags } = require('discord.js');
 const axios = require('axios');
 const { testDBConnection, query } = require('./db');
-const { getEnhancementName, getUserId, getTrackedItems, getUserTime, checkAndInsertItem } = require('./utils/utils.js');
+const { getEnhancementName, getUserId, getTrackedItems, checkAndInsertItem } = require('./utils/utils.js');
 const fs = require('fs');
 const path = require('path');
 
-const timezoneButtonHandler = require('./utils/timezoneButtonHandler.js');
 
 const notifiedItems = new Map();
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
@@ -40,11 +39,6 @@ async function checkPrice() {
             users = [users]; 
         }
 
-        const userTimezones = new Map();
-        for (const user of users) {
-            userTimezones.set(user.user_id, await getUserTime(user.user_id));
-        }
-
         const trackedMap = new Map();
         for (const tracked of trackedItems) {
             const key = `${tracked.item_id}-${tracked.enhancement_level}`;
@@ -63,8 +57,7 @@ async function checkPrice() {
 
             for(const tracked of matchedItems) {
                 if(item.basePrice > tracked.target_price) continue;
-                const userTimezone = userTimezones.get(tracked.user_id);
-                const timestamp = new Date(item.endTime).toLocaleString("en-US", { timeZone: userTimezone });
+                timestamp = item.endTime;
                 const formattedPrice = item.basePrice.toLocaleString("en-US");
                 const itemKey = `${tracked.user_id}-${item.id}-${item.basePrice}-${item.enhancement}`; 
 
@@ -104,10 +97,10 @@ async function sendDiscordNotification(formattedPrice, timestamp, enhancement_le
             .setDescription(`**${getEnhancementName(enhancement_level, itemCategoryId, itemName)}** has been listed at a low price!`)
             .addFields(
                 {name:'💰 **Price**', value:`**${formattedPrice}**`, inline: true },
-                {name:'📅 **Market Listing Time**', value:`**${timestamp}**`, inline: true }
+                {name:'📅 **Market Listing Time**', value:`**<t:${Math.floor(timestamp/ 1000)}:R>**`, inline: true }
             )
             .setTimestamp()
-            .setFooter({text: `BDO Market Track Bot - ${new Date().toLocaleString("en-US", {timeZone: await getUserTime(user_id)})}`});
+            .setFooter({text: `BDO Market Track Bot`});
             try {
                 await channel.send(`<@${user_id}>`).then( await channel.send({ embeds: [embedMessage] }));
             } catch (error) {
@@ -145,9 +138,8 @@ client.on("interactionCreate", async (interaction) => {
 
 });
 
-timezoneButtonHandler(client);
 testDBConnection();
-/*
+
 setInterval(() => {
     const now = Date.now();
     for (let [key, time] of notifiedItems) {
@@ -160,5 +152,5 @@ setInterval(() => {
 setInterval(checkPrice, 60_000);
 
 checkPrice();
-*/
+
 client.login(process.env.TOKEN);

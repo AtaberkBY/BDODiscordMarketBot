@@ -4,7 +4,7 @@ const { query } = require('../db.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('setup')
-        .setDescription('Creates a private tracking channel and allows you to set your timezone.'),
+        .setDescription('Creates a private tracking channel for the user.'),
 
     async execute(interaction) {
         const guild = interaction.guild;
@@ -79,31 +79,6 @@ module.exports = {
                 [newChannel.id, user.id, guild.id, newChannel.name]
             );
 
-            // 🔹 **Embed ve Butonları Gönder**
-            const embed = new EmbedBuilder()
-                .setColor('#0099ff')
-                .setTitle('🌍 Select Your Timezone')
-                .setDescription('Please select your timezone from the list below.');
-
-            const actionRow = new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setCustomId('timezone_UTC')
-                    .setLabel('UTC')
-                    .setStyle(ButtonStyle.Primary),
-                new ButtonBuilder()
-                    .setCustomId('timezone_CET')
-                    .setLabel('CET (Berlin)')
-                    .setStyle(ButtonStyle.Primary),
-                new ButtonBuilder()
-                    .setCustomId('timezone_TR')
-                    .setLabel('TR (Istanbul)')
-                    .setStyle(ButtonStyle.Primary)
-            );
-
-            const sentMessage = await newChannel.send({ embeds: [embed], components: [actionRow] });
-            await sentMessage.pin();
-
-            // 🔹 **Başarı Mesajı**
             await interaction.reply({ 
                 content: `✅ **Your private market channel has been created!** ${newChannel}`, 
                 flags: MessageFlags.Ephemeral 

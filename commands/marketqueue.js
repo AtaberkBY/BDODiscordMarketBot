@@ -1,6 +1,6 @@
 const axios = require('axios');
-const { getEnhancementName, getUserTime } = require("../utils/utils");
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');  // EmbedBuilder kullanıyoruz.
+const { getEnhancementName } = require("../utils/utils");
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');  // EmbedBuilder kullanıyoruz.
 
 const LIST_BASE_URL = "https://api.blackdesertmarket.com/list";
 const REGION = "eu";
@@ -26,15 +26,15 @@ module.exports = {
                 .setColor('#0099ff')
                 .setTitle('📜 Market Queue Items')
                 .setDescription('Here is the list of items currently in the market queue:')
-                .setFooter({ text: `BDO Market Tracker - ${new Date().toLocaleString("en-US", { timeZone: await getUserTime(interaction.user.id) })}` });
+                .setTimestamp()
+                .setFooter({ text: `BDO Market Tracker Bot` });
 
             if (queueData.length > 0) {
                 for (const [index, item] of queueData.entries()) {
-                    const userTimeZone = await getUserTime(interaction.user.id);
                     const itemText = getEnhancementName(item.enhancement, item.mainCategory, item.name);
                     embed.addFields({
                         name: `${index + 1}. ${itemText}`,
-                        value: `Price: ${item.basePrice.toLocaleString("en-US")}\n Market Listing Time: ${new Date(item.endTime).toLocaleString("en-US", { timeZone: userTimeZone })}`,
+                        value: `Price: ${item.basePrice.toLocaleString("en-US")}\n Market Listing Time: <t:${Math.floor(item.endTime / 1000)}:R>`,
                         inline: false
                     });
                 }
@@ -44,7 +44,7 @@ module.exports = {
             } else {
                 // If the market queue is empty
                 embed.setDescription('🔍 No items found in the market queue!');
-                await interaction.editReply({ embeds: [embed] });
+                await interaction.editReply({ embeds: [embed], flags: MessageFlags.Ephemeral });
             }
         } catch (error) {
             console.error("⚠️ API HATASI:", error.response ? error.response.data : error.message);
@@ -57,9 +57,9 @@ module.exports = {
 
             // If no response has been sent, use reply, otherwise edit the reply
             if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({ embeds: [errorEmbed] });
+                await interaction.reply({ embeds: [errorEmbed], flags: MessageFlags.Ephemeral });
             } else {
-                await interaction.editReply({ embeds: [errorEmbed] });
+                await interaction.editReply({ embeds: [errorEmbed], flags: MessageFlags.Ephemeral });
             }
         }
     },

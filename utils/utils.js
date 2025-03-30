@@ -41,11 +41,6 @@ async function getTrackedItems() {
     }
 }
 
-async function getUserTime(userId) {
-    const result = await query(`SELECT timezone FROM user_timezones WHERE user_id = $1`, [userId]);
-    return result.length > 0 ? result[0].timezone : 'UTC';
-}
-
 async function getUserId(client) {
     try {
         const dbChannels = await query("SELECT server_id, channel_name, user_id FROM channels");
@@ -289,4 +284,4 @@ async function checkAndInsertItem(itemId, itemName, itemCategoryId) {
     }
 }
 
-module.exports = { getEnhancementName, getUserId, getTrackedItems, getUserTime, checkAndInsertItem };
+module.exports = { getEnhancementName, getUserId, getTrackedItems, checkAndInsertItem };
