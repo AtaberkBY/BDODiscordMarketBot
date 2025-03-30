@@ -3,6 +3,12 @@ const { SlashCommandBuilder } = require('discord.js');
 const { query } = require('../db.js');
 
 
+
+function toTitleCase(str) {
+    return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('trackitem')
@@ -43,6 +49,7 @@ module.exports = {
             const fallenGodEnhancementNames = {1:"Desperate",2:"Distorted",3:"Silent",4:"Wailing",5:"Obliterating"}
 
             let itemName = interaction.options.getString('item');
+            itemName = toTitleCase(itemName);
             const priceString = interaction.options.getString('price').toUpperCase();
             const price = priceString.split('B')[0] * billion;
             let enhancementLevel = interaction.options.getInteger('enhancement_level');
@@ -52,13 +59,13 @@ module.exports = {
             }
            
             const userTrackedItemIds = await query('SELECT item_id FROM tracked_items WHERE user_id = $1', [user]);
-            const queryText = await query ('SELECT * FROM items WHERE item_name = $1', [itemName]);
+            const queryText = await query ('SELECT * FROM items WHERE item_name ILIKE $1', [itemName]);
             if (queryText.length === 0) {
                 const errorRecommendationText = await query('SELECT * FROM items WHERE item_name ILIKE $1', [`%${itemName}%`]);
                 await interaction.reply(`⚠️ Item not found. Did you mean?\n ${errorRecommendationText.map(item => item.item_name).join('\n')}`); 
                 return;
             }
-            if(!fallenGods.some(item => itemName.includes(item)) && enhancementLevel != 0 && !queryText.main_category == 20 ){
+            if(!fallenGods.some(item => itemName.includes(item)) && enhancementLevel != 0 && queryText[0].main_category != 20 ){
                 enhancementLevel+=15;
             }
             if(fallenGods.includes(itemName)){

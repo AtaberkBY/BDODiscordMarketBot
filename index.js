@@ -147,7 +147,7 @@ client.on("interactionCreate", async (interaction) => {
 
 timezoneButtonHandler(client);
 testDBConnection();
-
+/*
 setInterval(() => {
     const now = Date.now();
     for (let [key, time] of notifiedItems) {
@@ -160,4 +160,5 @@ setInterval(() => {
 setInterval(checkPrice, 60_000);
 
 checkPrice();
+*/
 client.login(process.env.TOKEN);

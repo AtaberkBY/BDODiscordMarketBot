@@ -17,7 +17,9 @@ function getEnhancementName(enhancement_level, categoryId, itemName) {
     const gearCategories = [1, 5, 10, 15, 40];
     const noEnhancementNameCategories = [ 70 ];
     if (gearCategories.includes(categoryId) && !itemName.includes("Godr-Ayed") && !fallenGods.some(item => itemName.includes(item))) {
+        console.log(itemName, enhancement_level);
         return enhancement_level <= 15 ? `+${enhancement_level} ${itemName}` : gearNames[enhancement_level]+itemName || `+${enhancement_level} ${itemName}`;
+        //Godr-ayed kategorisindeki eşyaların enhancement level'i +15 olacak
     } else if(gearCategories.includes(categoryId) && itemName.includes("Godr-Ayed")){
         enhancement_level+=15
         return gearNames[enhancement_level]+itemName;
@@ -195,7 +197,9 @@ async function checkAndInsertItem(itemId, itemName, itemCategoryId) {
         "Trion" : 24,
         "Soul Tome" : 25,
         "Foxtail Fans" : 26,
-        "Sledgehammer" : 27
+        "Sledgehammer" : 27,
+        "Enlightened Blade" : 28,
+        "Lil' Devil" : 29
 
     },
     15: {

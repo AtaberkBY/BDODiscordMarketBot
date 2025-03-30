@@ -47,15 +47,22 @@ async function updateCommands() {
 
         // Yeni komutları al
         const newCommandNames = commands.map(cmd => cmd.name);
+        const newCommandDescriptions = commands.map(cmd => ({ name: cmd.name, description: cmd.description }));
 
         // Mevcut komutların adlarını al
         const existingCommandNames = existingCommands.map(cmd => cmd.name);
+        const existingCommandDescriptions = existingCommands.map(cmd => ({ name: cmd.name, description: cmd.description }));
+
+        const commandsMatch =
+            existingCommandNames.length === newCommandNames.length &&
+            existingCommandNames.every(name => 
+                newCommandNames.includes(name) &&
+                existingCommandDescriptions.find(cmd => cmd.name === name)?.description === 
+                newCommandDescriptions.find(cmd => cmd.name === name)?.description
+        );
 
         // Komutlar değişmiş mi?
-        if (
-            existingCommandNames.length === newCommandNames.length &&
-            existingCommandNames.every(name => newCommandNames.includes(name))
-        ) {
+        if (commandsMatch) {
             console.log('✅ Komutlar zaten güncel, yükleme yapılmadı.');
             return;
         }
