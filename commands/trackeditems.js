@@ -1,5 +1,5 @@
 // ./commands/trackeditems.js
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { query } = require('../db.js');
 const { getEnhancementName } = require('../utils/utils.js');
 
@@ -18,7 +18,7 @@ module.exports = {
                 result.forEach((row, index) => {
                     response += `🔹 **${index + 1}.** ${getEnhancementName(row.enhancement_level,row.main_category,row.item_name)} -> ${formatNumber(row.target_price)}\n`;
                 });
-                await interaction.reply(response);
+                await interaction.reply({ content: response, flags: MessageFlags.Ephemeral }); 
             }
         } catch (err) {
             console.error("❌ Veri tabanı hatası:", err);

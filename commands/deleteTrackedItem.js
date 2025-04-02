@@ -1,5 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, EmbedBuilder, SlashCommandBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const { query } = require('../db.js');
+const { getEnhancementName } = require('../utils/utils.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,15 +23,17 @@ module.exports = {
             .setDescription('Select the item you want to delete.');
 
         const row = new ActionRowBuilder();
-
-        userItems.forEach((item, index) => {
-            row.addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`delete_item_${item.item_id}_${item.item_name}`)
-                    .setLabel(`${index + 1}. ${item.item_name}`)
-                    .setStyle(ButtonStyle.Danger)
-            );
-        });
+        const buttons = await Promise.all(
+            userItems.map(async (item, index) => {
+                let enhancementName = await getEnhancementName(item.enhancement_level, item.main_category, item.item_name);
+                return new ButtonBuilder()
+                    .setCustomId(`delete_item_${item.item_id}_${enhancementName}_${item.enhancement_level}`)
+                    .setLabel(`${index + 1}. ${enhancementName}`)
+                    .setStyle(ButtonStyle.Danger);
+            })
+        );
+        row.addComponents(...buttons);
+        
 
         const message = await interaction.editReply({ embeds: [embed], components: [row] });
 
@@ -41,21 +44,23 @@ module.exports = {
             const args = i.customId.split('_');
             const action = args[0];
             const itemId = parseInt(args[2], 10);
-            const itemName = args.slice(3).join('_');
+            const enhancementName = args.slice(3, args.length - 1).join('_');
+            const enhancementLevel = parseInt(args[args.length - 1], 10);
+
 
             if (action === 'delete') {
                 const confirmEmbed = new EmbedBuilder()
                     .setTitle('Are you sure?')
-                    .setDescription(`Are you sure you want to delete this item?\n\n**Item: ${itemName}**`)
+                    .setDescription(`Are you sure you want to delete this item?\n\n**Item: ${enhancementName}**`)
                     .setColor('#FF0000');
 
                 const confirmRow = new ActionRowBuilder().addComponents(
                     new ButtonBuilder()
-                        .setCustomId(`confirm_delete_${itemId}_${itemName}`)
+                        .setCustomId(`confirm_delete_${itemId}_${enhancementName}_${enhancementLevel}`)
                         .setLabel('Yes')
                         .setStyle(ButtonStyle.Success),
                     new ButtonBuilder()
-                        .setCustomId(`cancel_delete_${itemId}_${itemName}`)
+                        .setCustomId(`cancel_delete_${itemId}_${enhancementName}_${enhancementLevel}`)
                         .setLabel('No')
                         .setStyle(ButtonStyle.Danger)
                 );
@@ -64,11 +69,12 @@ module.exports = {
             }
 
             if (action === 'confirm') {
-                await query('DELETE FROM tracked_items WHERE item_id = $1 AND user_id = $2', [itemId, userId]);
+
+                await query('DELETE FROM tracked_items WHERE item_id = $1 AND user_id = $2 AND enhancement_level = $3', [itemId, userId, enhancementLevel]);
 
                 const successEmbed = new EmbedBuilder()
                     .setTitle('Item Deleted')
-                    .setDescription(`The item **${itemName}** has been deleted successfully.`)
+                    .setDescription(`The item **${enhancementName}** has been deleted successfully.`)
                     .setColor('#00FF00');
 
                 return await i.update({ embeds: [successEmbed], components: [] });
@@ -77,7 +83,7 @@ module.exports = {
             if (action === 'cancel') {
                 const cancelEmbed = new EmbedBuilder()
                     .setTitle('Item Deletion Canceled')
-                    .setDescription(`The deletion of the item **${itemName}** has been canceled.`)
+                    .setDescription(`The deletion of the item **${enhancementName}** has been canceled.`)
                     .setColor('#FF0000');
 
                 return await i.update({ embeds: [cancelEmbed], components: [] });
