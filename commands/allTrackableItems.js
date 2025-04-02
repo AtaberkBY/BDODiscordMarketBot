@@ -34,7 +34,7 @@ module.exports = {
             if (result.length === 0) {
                 await interaction.reply("📂 There are no tracked items.");
             } else {
-                let response = "📜 **Tracked Items:**\n";
+                let response = "📜 **Trackable Items:**\n";
                 result.forEach((row, index) => {
                     response += `🔹 **${index + 1}.** ${row.item_name}\n`;
                 });
